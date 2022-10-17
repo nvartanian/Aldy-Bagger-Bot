@@ -2,6 +2,7 @@
 
 %initialise environment
 robot = AldyBaggerBot(UR3);
+env = AldyStore(robot);
 
 %run
 state = 0;

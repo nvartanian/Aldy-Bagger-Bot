@@ -1,0 +1,31 @@
+classdef ConveyorBelt
+    properties
+        length;
+        width;
+        speed;
+        
+        %status
+        eStop = false;
+        
+    end
+    methods
+        %constructor
+        function obj = ConveyorBelt()
+            if nargin == 1
+                obj.robot = robot;
+    
+            
+            %setup environment
+            %add floor
+            
+            %add checkout
+            
+            %safety features
+            %e-stop
+            
+            %light curtain
+            
+        end
+        
+    end
+end
