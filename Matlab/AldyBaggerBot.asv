@@ -10,10 +10,10 @@ classdef AldyBaggerBot
     methods
         %constructor
         function obj = AldyBaggerBot(robot, gripper)
-            obj.robot = robot;
-            obj.gripper = gripper;
+            if nargin == 1
+                obj.robot = robot;
+                obj.gripper = gripper;
         end
-        
         function bagItem(robot, item, bag)
             %robot approach item
             %determine next pose

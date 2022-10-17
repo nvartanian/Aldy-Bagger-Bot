@@ -1,14 +1,20 @@
 %% Robot Controll, structure only so far...
+clear All
+clc
+clf
+hold on
 
 %initialise environment
-gripper = "gripperClass"....
+gripper = "gripperClass";
 robot = AldyBaggerBot(UR3, gripper);
 env = AldyStore(robot);
 
 %run
 state = 0;
-while(1)
-    %100hz
+timestep = 0;
+while true
+    tic
+    timestep
     switch state
         case 0
             %idle, no errors, waiting for start button press, return to home 
@@ -25,4 +31,6 @@ while(1)
         otherwise
             %error, stop
     end
+    timestep = timestep+1;
+    pause(0.04 - toc) %25hz
 end
