@@ -1,6 +1,6 @@
 classdef Item
 	properties
-		transform = eye(4);
+		pose = eye(4);
 		grabOrientationOffset = eye(4); %transform from item pose to ideal grabbing orientation
 		grabPose = pose * grabOrientationOffset;
 		grabWidth = 0; %width of jaw to grab
@@ -11,11 +11,6 @@ classdef Item
 		type %for sorting
 	end
 	methods
-        %constructor
-        function obj = Item(transform)
-            obj.transform = transform;
-        end
-        
 		function p = setPose(obj, pose)
 			obj.pose = pose;
             p = obj.pose;

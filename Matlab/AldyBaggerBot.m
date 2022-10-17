@@ -28,6 +28,8 @@ classdef AldyBaggerBot
             
             %robot move to safe pose
             
+            %robot move past scanner
+            
             %robot approach bag
             
             %robot place item

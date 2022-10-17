@@ -4,28 +4,44 @@ classdef ConveyorBelt
         width;
         speed;
         
+        transform;
+        
+        items = {};
+        
         %status
-        eStop = false;
         
     end
     methods
         %constructor
-        function obj = ConveyorBelt()
-            if nargin == 1
-                obj.robot = robot;
-    
-            
-            %setup environment
-            %add floor
-            
-            %add checkout
-            
-            %safety features
-            %e-stop
-            
-            %light curtain
-            
+        function obj = ConveyorBelt(transform, length, width)
+            obj.transform = transform;
+            obj.length = length;
+            obj.width = 
         end
         
+        function self = spawnItem(self)
+            pose = self.transform * transl(rand(), rand(), 0) * trotz(rand());
+            self.items = [self.items, Item(pose)];
+        end
+        
+        function stepBelt(self)
+            if self.laserTriggered() 
+                return %dont step belt
+            end
+            for i = 1:size(self.items)
+                self.items
+            end 
+        end
+        
+        function t = laserTriggered(self)
+            t = false;
+            for i = 1:size(self.items)
+                if collision %check each item on belt
+                    t = true;
+                    return;
+                end
+            end
+        end
+                
     end
 end

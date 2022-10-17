@@ -1,6 +1,8 @@
 classdef AldyStore
     properties
-        robot;
+        AldyBaggerBot;
+        ConveyorBelt; 
+        BaggingArea; %need class for baggingArea and Bag
         
         %status
         eStop = false;
@@ -8,10 +10,12 @@ classdef AldyStore
     end
     methods
         %constructor
-        function obj = AldyStore(robot)
+        function obj = AldyStore(AldyBaggerBot)
             if nargin == 1
-                obj.robot = robot;
+                obj.AldyBaggerBot = AldyBaggerBot;
             end
+            obj.ConveyorBelt = ConveyorBelt(); %create ConveyorBelt obj
+            obj.BaggingArea = BaggingArea(); %create BaggingArea obj
             
             %setup environment
             %add floor
@@ -23,6 +27,11 @@ classdef AldyStore
             
             %light curtain
             
+        end
+        
+        function self = stepStore(self)
+            self.ConveyorBelt.stepBeltX();
+            self.AldyBaggerBot.stepRobot();
         end
         
     end
