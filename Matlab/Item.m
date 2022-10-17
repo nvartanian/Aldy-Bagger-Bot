@@ -1,10 +1,11 @@
 classdef Item
 	properties
-		transform = eye(4);
-		grabOrientationOffset = eye(4); %transform from item pose to ideal grabbing orientation
-		grabPose = pose * grabOrientationOffset;
-		grabWidth = 0; %width of jaw to grab
-		itemBox = RectangularPrism([1,-1,-1], [1,1,1]);
+		length = rand() * 0.1 + 0.1; %0.1 to 0.2
+        width = rand() * 0.1 + 0.1; %0.1 to 0.2
+        height = rand() * 0.1 + 0.1; %0.1 to 0.2
+        
+        transform;
+		body;
 
 		% optional properties
 		weight %for checking/sorting
@@ -14,22 +15,23 @@ classdef Item
         %constructor
         function obj = Item(transform)
             obj.transform = transform;
+            L1 = Link('alpha',0,'a',0,'d',0,'offset',0);
+            obj.body = SerialLink(L1);
+            obj.body.base = transform;
+            
+            [faceData,vertexData] = plyread('HalfSizedRedGreenBrick.ply','tri');
+            obj.body.faces = {faceData,[]};
+            vertexData(:,1) = vertexData(:,1);
+            obj.body.points = {vertexData,[]};
+            plot3d(obj.body,0,'delay',0);
         end
         
-		function p = setPose(obj, pose)
-			obj.pose = pose;
-            p = obj.pose;
-		end
-		function o = setGrabOrientationOffset(obj, grabOrientationOffset)
-			obj.grabOrientationOffset = grabOrientationOffset;
-            o = obj.grabOrientationOffset;
-		end
-
-		function p = getPose(obj)
-			p = obj.pose;
-		end
-		function p = getGrapPose(obj)
-			p = obj.grabPose;
-		end
+        function self = moveItem(self, transform)
+            self.transform = transform;
+            self.body.base = transform;
+            self.body.animate(0)
+            drawnow();
+        end
+ 
 	end
 end

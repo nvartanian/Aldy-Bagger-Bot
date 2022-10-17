@@ -18,7 +18,8 @@ classdef AldyStore
         %constructor
         function obj = AldyStore(AldyBaggerBot)
             obj.AldyBaggerBot = AldyBaggerBot;
-            beltT = obj.transform * transl(1, 1, 1) * trotz(0);
+            beltT = obj.transform * transl(0, 1, 1);
+            trplot(beltT);
             obj.ConveyorBelt = ConveyorBelt(beltT, 2, 0.4); %create ConveyorBelt obj
             %obj.BaggingArea = BaggingArea(); %create BaggingArea obj
             
@@ -69,8 +70,8 @@ classdef AldyStore
         end
         
         function self = stepStore(self)
-            self.ConveyorBelt.stepBeltX();
-            self.AldyBaggerBot.stepRobot();
+            self.ConveyorBelt = self.ConveyorBelt.stepBeltY();
+            %self.AldyBaggerBot.stepRobot();
         end
         
     end

@@ -38,8 +38,7 @@ end
 %% If plot verticies
 if isfield(plotOptions,'plotVerts') && plotOptions.plotVerts
     for i=1:size(vertex,1);
-        plot3(vertex(i,1),vertex(i,2),vertex(i,3),'r*');
-        text(vertex(i,1),vertex(i,2),vertex(i,3),num2str(i));
+        r = plot3(vertex(i,1),vertex(i,2),vertex(i,3),'r*');
     end
 end
 

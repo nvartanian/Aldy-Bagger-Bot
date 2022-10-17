@@ -20,7 +20,6 @@ while true
             %idle, no errors, waiting for start button press, return to home 
         case 1
             %packing bags
-            env.stepStore();
         case 2
             %both bags full, waiting for bags to be reset and start button press
         case 3
@@ -31,6 +30,7 @@ while true
         otherwise
             %error, stop
     end
+    env = env.stepStore();
     timestep = timestep+1;
     pause(0.04 - toc) %25hz
 end

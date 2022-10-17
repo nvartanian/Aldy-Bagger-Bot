@@ -2,8 +2,8 @@ classdef AldyStore
     properties
         %constant
         transform = eye(4); %centre of store
-        width = 1.5; %x axis = width
-        length = 3; %y axis = length
+        width = 2; %x axis = width
+        length = 6; %y axis = length
         height = 2; %z axis = height
         
         AldyBaggerBot;
@@ -18,7 +18,8 @@ classdef AldyStore
         %constructor
         function obj = AldyStore(AldyBaggerBot)
             obj.AldyBaggerBot = AldyBaggerBot;
-            beltT = obj.transform * transl(1, 1, 1) * trotz(0);
+            beltT = obj.transform * transl(0, 0, 1);
+            trp
             obj.ConveyorBelt = ConveyorBelt(beltT, 2, 0.4); %create ConveyorBelt obj
             %obj.BaggingArea = BaggingArea(); %create BaggingArea obj
             
@@ -39,13 +40,13 @@ classdef AldyStore
             wallX = [obj.transform(1, 4) + obj.width/2, obj.transform(1, 4) - obj.width/2;...
                      obj.transform(1, 4) + obj.width/2, obj.transform(1, 4) - obj.width/2];
             wallY = [obj.transform(2, 4) - obj.length/2, obj.transform(2, 4) - obj.length/2;...
-                     obj.transform(2, 4) - obj.length/2, obj.transform(2, 4) - obj.length/];
+                     obj.transform(2, 4) - obj.length/2, obj.transform(2, 4) - obj.length/2];
             wallZ = [obj.transform(3, 4) + obj.height, obj.transform(3, 4) + obj.height;...
                      obj.transform(3, 4), obj.transform(3, 4)];
             surf(wallX,wallY,wallZ,'CData',imread('brickWall.jpg'),'FaceColor','texturemap');
 
             %Checkout
-            checkoutXYZ = [obj.transform(1, 4),obj.transform(2, 4),obj.transform(3, 4)];
+            checkoutXYZ = [obj.transform(1, 4), obj.transform(2, 4) + 2, obj.transform(3, 4)];
             PlaceObject('AldyCheckout.ply',checkoutXYZ);
 
             % Safety Features/Enviromental Objects
@@ -69,8 +70,8 @@ classdef AldyStore
         end
         
         function self = stepStore(self)
-            self.ConveyorBelt.stepBeltX();
-            self.AldyBaggerBot.stepRobot();
+            self.ConveyorBelt.stepBeltY();
+            %self.AldyBaggerBot.stepRobot();
         end
         
     end
