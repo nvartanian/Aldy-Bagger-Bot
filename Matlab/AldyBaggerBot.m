@@ -3,8 +3,11 @@ classdef AldyBaggerBot
         robot;
         gripper;
         
+        homePose = [0,0,0,0,0,0];
+        
+        path = [];
+        
         %status
-        moving = false;
         eStop = false;
     end
     methods
@@ -14,29 +17,25 @@ classdef AldyBaggerBot
             obj.gripper = gripper;
         end
         
-        function bagItem(robot, item, bag)
-            %robot approach item
-            %determine next pose
-            
-            %check collisions
-            
-            %move
-            while obj.moving
-                %check collisions (<5cm?)
-                %check errors (e-stop etc)
+        %methods
+        function self = stepRobot(self)
+            if self.eStop == false
+                if size(self.path, 2) > 0
+                    self.robot.model.animate(self.path(1)); %move to next pose in path
+                    if size(self.path, 2) > 2
+                        self.path = self.path(2:end); %remove from path
+                    else
+                    %last pose in path
+                        self.path = [];
+                    end
+                end
             end
-            %robot grab item
-            
-            %robot move to safe pose
-            
-            %robot move past scanner
-            
-            %robot approach bag
-            
-            %robot place item
-            
-            %robot move to safe pose
-            
         end
+        
+        function traj = calculateTraj(self, startTransform, endTransform)
+            traj = [0,0,0,0,0,0]; %TODO
+            %check collisions
+        end
+        
     end
 end

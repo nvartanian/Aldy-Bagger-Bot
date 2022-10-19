@@ -24,11 +24,14 @@ while true
     timestep
     switch state
         case 0
-            %idle, no errors, waiting for start button press, return to home 
+            %idle, no errors, waiting for start button press, return to home
+            env.idle = true;
         case 1
             %packing bags
+            env.idle = false;
         case 2
             %both bags full, waiting for bags to be reset and start button press
+            env.idle = true;
         case 3
             %stopped, errors (such as eStop)
         case 4

@@ -7,9 +7,10 @@ classdef Item
         transform;
 		body;
         onBelt = false;
+        bagged = false;
 
 		% optional properties
-		weight %for checking/sorting
+		heavy = true; %for checking/sorting
 		type %for sorting
 	end
 	methods
@@ -22,7 +23,6 @@ classdef Item
             
             [faceData,vertexData] = plyread('HalfSizedRedGreenBrick.ply','tri');
             obj.body.faces = {faceData,[]};
-            %vertexData(:,1) = vertexData(:,1);
             obj.body.points = {vertexData,[]};
             plot3d(obj.body,0,'delay',0);
         end
@@ -31,7 +31,6 @@ classdef Item
             self.transform = transform;
             self.body.base = transform;
             self.body.animate(0);
-            %drawnow();
         end
  
 	end

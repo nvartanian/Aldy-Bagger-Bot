@@ -28,7 +28,7 @@ classdef ConveyorBelt
             %reduces stuttering and view reseting if items are spawned in
             %real time. Items are hidden underneath the conveyor belt until
             %"spawned". 
-                obj = obj.spawnItems();
+            obj = obj.spawnItems();
         end
         
         %methods
