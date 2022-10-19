@@ -3,6 +3,7 @@ clear All
 clc
 clf
 hold on
+camlight;
 
 try
    transl(0,0,0); %try a toolbox function to see if it has been run yet
@@ -19,7 +20,7 @@ env = AldyStore(robot);
 state = 0;
 timestep = 0;
 while true
-    tic
+    tic  
     timestep
     switch state
         case 0

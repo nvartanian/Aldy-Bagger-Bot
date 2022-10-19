@@ -6,6 +6,7 @@ classdef Item
         
         transform;
 		body;
+        onBelt = false;
 
 		% optional properties
 		weight %for checking/sorting
@@ -13,15 +14,15 @@ classdef Item
 	end
 	methods
         %constructor
-        function obj = Item(transform)
+        function obj = Item(name, transform)
             obj.transform = transform;
             L1 = Link('alpha',0,'a',0,'d',0,'offset',0);
-            obj.body = SerialLink(L1);
+            obj.body = SerialLink(L1,'name',name);
             obj.body.base = transform;
             
             [faceData,vertexData] = plyread('HalfSizedRedGreenBrick.ply','tri');
             obj.body.faces = {faceData,[]};
-            vertexData(:,1) = vertexData(:,1);
+            %vertexData(:,1) = vertexData(:,1);
             obj.body.points = {vertexData,[]};
             plot3d(obj.body,0,'delay',0);
         end
@@ -29,8 +30,8 @@ classdef Item
         function self = moveItem(self, transform)
             self.transform = transform;
             self.body.base = transform;
-            self.body.animate(0)
-            drawnow();
+            self.body.animate(0);
+            %drawnow();
         end
  
 	end
