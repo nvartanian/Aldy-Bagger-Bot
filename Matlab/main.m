@@ -4,6 +4,12 @@ clc
 clf
 hold on
 
+try
+   transl(0,0,0); %try a toolbox function to see if it has been run yet
+catch exception
+   run("rvctools/startup_rvc.m");
+end
+
 %initialise environment
 gripper = "gripperClass";
 robot = AldyBaggerBot(UR3, gripper);
