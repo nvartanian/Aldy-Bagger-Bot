@@ -10,7 +10,7 @@ classdef AldyStore
         ConveyorBelt; 
         BaggingArea; %need class for baggingArea and Bag
         
-        scanTransform = eye(4) * transl(0,0,0) * trotx(deg2rad(20)); %TODO, work out pose to pass scanner. Trial/error, plot transfrom and check.
+        scanTransform = eye(4) * transl(0.3,1.8,0.85) * trotx(deg2rad(20)); %TODO, work out pose to pass scanner. Trial/error, plot transfrom and check.
         
         %status
         idle = true;
@@ -21,7 +21,7 @@ classdef AldyStore
         %constructor
         function obj = AldyStore(AldyBaggerBot)
             obj.AldyBaggerBot = AldyBaggerBot;
-            obj.AldyBaggerBot.robot.model.base = obj.transform * transl(-0.15, -0.25 + 2, 0.6);
+            obj.AldyBaggerBot.robot.model.base = obj.transform * transl(-0.15, -0.25 + 2, 0.6) * trotz(pi);
             obj.AldyBaggerBot.robot.model.animate(obj.AldyBaggerBot.homePose);
             beltT = obj.transform * transl(0.1, 1.5, 0.75);
             obj.ConveyorBelt = ConveyorBelt(beltT, 3, 0.4); %create ConveyorBelt obj
@@ -70,6 +70,9 @@ classdef AldyStore
             %e-stop
             
             %light curtain
+            
+            %change default figure view
+            view(135,30)
             
         end
         
