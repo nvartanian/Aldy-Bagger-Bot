@@ -19,6 +19,7 @@ env = AldyStore(robot);
 %run
 state = 1;
 timestep = 0;
+%profile on
 while true
     tic  
     timestep
@@ -45,3 +46,5 @@ while true
     timestep = timestep+1;
     pause(0.04 - toc) %25hz
 end
+
+%profile viewer

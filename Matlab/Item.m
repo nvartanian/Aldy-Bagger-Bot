@@ -8,7 +8,11 @@ classdef Item
 		body;
         onBelt = false; %goes true when item is enabled
         readyToCollect = false; %goes true when laser is triggered
+        trajCalculated = false; %goes true when traj is calculated
         bagged = false; %goes true when robot touches item < 0.05m
+        onRobot = false;
+        
+        wayPoints = [];
 
 		% optional properties
 		heavy = true; %for checking/sorting

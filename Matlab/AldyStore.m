@@ -10,7 +10,7 @@ classdef AldyStore
         ConveyorBelt; 
         BaggingArea; %need class for baggingArea and Bag
         
-        scanTransform = eye(4) * transl(0.3,1.8,0.85) * trotx(deg2rad(20)); %TODO, work out pose to pass scanner. Trial/error, plot transfrom and check.
+        scanTransform = eye(4) * transl(0.3,1.8,0.85) * trotx(deg2rad(180)); %TODO, work out pose to pass scanner. Trial/error, plot transfrom and check.
         
         %status
         idle = true;
@@ -21,11 +21,11 @@ classdef AldyStore
         %constructor
         function obj = AldyStore(AldyBaggerBot)
             obj.AldyBaggerBot = AldyBaggerBot;
-            obj.AldyBaggerBot.robot.model.base = obj.transform * transl(-0.15, -0.25 + 2, 0.6) * trotz(pi);
+            obj.AldyBaggerBot.robot.model.base = obj.transform * transl(0, 1.75, 0.75) * trotz(pi);
             obj.AldyBaggerBot.robot.model.animate(obj.AldyBaggerBot.homePose);
             beltT = obj.transform * transl(0.1, 1.5, 0.75);
             obj.ConveyorBelt = ConveyorBelt(beltT, 3, 0.4); %create ConveyorBelt obj
-            obj.BaggingArea = BaggingArea(obj.transform * transl(0.12, 2.3, 0.6) * trotz(deg2rad(30))); %create BaggingArea obj
+            obj.BaggingArea = BaggingArea(obj.transform * transl(0.12, 2, 0.75) * trotz(deg2rad(0))); %create BaggingArea obj
             
             %setup environment
             % Floor
@@ -85,37 +85,55 @@ classdef AldyStore
             end
             
             for i = 1:size(self.ConveyorBelt.items,2)
-                if max(abs(self.AldyBaggerBot.robot.model.fkine(self.AldyBaggerBot.robot.model.getpos) - self.ConveyorBelt.items{i}.transform)) < 0.005
-                    self.ConveyorBelt.items{i}.bagged = true;
+                if self.ConveyorBelt.items{i}.bagged ~= false
+                    %warning('Item %d is already bagged, continuing to next item', i);
+                    continue
                 end
                 if self.ConveyorBelt.items{i}.readyToCollect ~= true
                     %warning('Item %d is not on the belt, continuing to next item', i);
                     continue
                 end
+                if self.ConveyorBelt.items{i}.onRobot == true
+                    %move brick to robot
+                    %check place brick
+                    if max(max(abs(self.AldyBaggerBot.robot.model.fkine(self.AldyBaggerBot.robot.model.getpos) - self.ConveyorBelt.items{i}.wayPoints{6}))) < 0.005
+                        self.ConveyorBelt.items{i}.bagged = true;
+                        continue
+                    end
+                    %not at bag yet, keep brick on robot
+                    self.ConveyorBelt.items{i} = self.ConveyorBelt.items{i}.moveItem(self.AldyBaggerBot.robot.model.fkine(self.AldyBaggerBot.robot.model.getpos) * transl(0,0,0.1) * trotx(deg2rad(180)));
+                    continue
+                end
+                if self.ConveyorBelt.items{i}.trajCalculated ~= false
+                    %traj calculated but not yet on robot
+                    %check collect brick
+                    if max(max(abs(self.AldyBaggerBot.robot.model.fkine(self.AldyBaggerBot.robot.model.getpos) - self.ConveyorBelt.items{i}.wayPoints{2}))) < 0.005
+                        self.ConveyorBelt.items{i}.onRobot = true;
+                    end
+                    continue
+                end
+                
 %                 if self.ConveyorBelt.items{i}.onBelt ~= true
 %                     %warning('Item %d is not on the belt, continuing to next item', i);
 %                     continue
 %                 end
-%                 if self.ConveyorBelt.items{i}.bagged ~= false
-%                     %warning('Item %d is already bagged, continuing to next item', i);
-%                     continue
-%                 end
-                if self.AldyBaggerBot.inRange(self.ConveyorBelt.items{i}.transform) ~= true
+
+                if self.AldyBaggerBot.inRange(self.ConveyorBelt.items{i}.transform * transl(0,0,0.2) * trotx(deg2rad(180))) ~= true
                     %warning('Item %d is not in range, continuing to next item', i);
                     continue
                 end
                 if self.ConveyorBelt.items{i}.heavy == true %find a bag spot that can take a heavy item
-                    try self.BaggingArea.nextHeavyBag() ~= false
+                    try self.BaggingArea.nextHeavyBag() ~= false;
                     catch
-                        self = self.generateBaggingPath(self.AldyBaggerBot, self.ConveyorBelt.items{i}, self.BaggingArea.nextHeavyBag());
-                        self.ConveyorBelt.items{i}.readyToCollect = true;
+                        self = self.generateBaggingPath(self.AldyBaggerBot, i, self.BaggingArea.nextHeavyBag());
+                        self.ConveyorBelt.items{i}.trajCalculated = true;
                         return
                     end
                 else %find a bag spot that can take a light item
-                    try self.BaggingArea.nextLightBag() ~= false
+                    try self.BaggingArea.nextLightBag() ~= false;
                     catch
-                        self = self.generateBaggingPath(self.AldyBaggerBot, self.ConveyorBelt.items{i}, self.BaggingArea.nextLightBag());
-                        self.ConveyorBelt.items{i}.readyToCollect = true;
+                        self = self.generateBaggingPath(self.AldyBaggerBot, i, self.BaggingArea.nextLightBag());
+                        self.ConveyorBelt.items{i}.trajCalculated = true;
                         return
                     end
                 end
@@ -124,37 +142,38 @@ classdef AldyStore
             end
         end
         
-        function self = generateBaggingPath(self, AldyBaggerBot, Item, Bag)            
+        function self = generateBaggingPath(self, AldyBaggerBot, itemIndex, Bag)            
             %determine robot approach item pose
-            t = Item.transform * transl(0,0,0.2);
-            self.AldyBaggerBot = self.AldyBaggerBot.addTraj(t);
+            self.ConveyorBelt.items{itemIndex}.wayPoints{1} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.2) * trotx(deg2rad(180));
             
             %robot grab item
-            t = Item.transform * transl(0,0,0.1);
-            self.AldyBaggerBot = self.AldyBaggerBot.addTraj(t);
+            self.ConveyorBelt.items{itemIndex}.wayPoints{2} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.1) * trotx(deg2rad(180));
             
             %robot move to safe pose
-            t = Item.transform * transl(0,0,0.2);
-            self.AldyBaggerBot = self.AldyBaggerBot.addTraj(t);
+            self.ConveyorBelt.items{itemIndex}.wayPoints{3} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.2) * trotx(deg2rad(180));
             
             %robot move past scanner
-            t = self.scanTransform;
-            self.AldyBaggerBot = self.AldyBaggerBot.addTraj(t);
+            self.ConveyorBelt.items{itemIndex}.wayPoints{4} = self.scanTransform;
             
             %robot approach bag
             tb = Bag.nextLightSlotTransform();
-            if Item.heavy == false
+            if self.ConveyorBelt.items{itemIndex}.heavy == false
                 tb = Bag.nextHeavySlotTransform();
             end
-            t = tb * transl(0, 0, 0.2);
-            self.AldyBaggerBot = self.AldyBaggerBot.addTraj(t);
+            self.ConveyorBelt.items{itemIndex}.wayPoints{5} = tb * transl(0, 0, 0.2) * trotx(deg2rad(180)) * trotz(deg2rad(90));
             
             %robot place item
-            self.AldyBaggerBot = self.AldyBaggerBot.addTraj(t);
+            self.ConveyorBelt.items{itemIndex}.wayPoints{6} = tb * trotx(deg2rad(180)) * trotz(deg2rad(90));
+            
+            %robot move away from bag
+            self.ConveyorBelt.items{itemIndex}.wayPoints{7} = tb * transl(0, 0, 0.2) * trotx(deg2rad(180)) * trotz(deg2rad(90));
             
             %robot move to home pose
-            t = self.AldyBaggerBot.robot.model.fkine(AldyBaggerBot.homePose);
-            self.AldyBaggerBot = self.AldyBaggerBot.addTraj(t);
+            self.ConveyorBelt.items{itemIndex}.wayPoints{8} = self.AldyBaggerBot.robot.model.fkine(AldyBaggerBot.homePose);
+            size(self.ConveyorBelt.items{itemIndex}.wayPoints, 2)
+            for i = 1:size(self.ConveyorBelt.items{itemIndex}.wayPoints, 2)
+                self.AldyBaggerBot = self.AldyBaggerBot.addTraj(self.ConveyorBelt.items{itemIndex}.wayPoints{i});
+            end
         end
         
     end

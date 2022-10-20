@@ -14,7 +14,7 @@ classdef ConveyorBelt
         ticksUntilNextSpawn = 0;  %randomly generated after each spawn based on AverageTicksBetweenSpawns +/- 50%
         
         %status
-        
+        updateLaser = true;
     end
     methods
         %constructor
@@ -35,9 +35,13 @@ classdef ConveyorBelt
         function self = stepBeltY(self)  
             %check if laser is triggered
             if self.laserTriggered() == true
-                self = self.laserUpdate();
+                if self.updateLaser == true
+                    self = self.laserUpdate();
+                    self.updateLaser = false;
+                end
                 return %stop item spawning, dont step belt
             end
+            self.updateLaser = true;
             
             %spawn item? - actually enable and move up onto belt
             self.ticksSinceLastSpawn = self.ticksSinceLastSpawn + 1;
@@ -58,6 +62,9 @@ classdef ConveyorBelt
             %step each item
             for i = 1:self.maxItemCount
                 if self.items{i}.bagged == true
+                   continue 
+                end
+                if self.items{i}.onRobot == true
                    continue 
                 end
                 if self.items{i}.onBelt == true

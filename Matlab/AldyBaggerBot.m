@@ -4,7 +4,7 @@ classdef AldyBaggerBot
         gripper;
         
         homePose = [0,-pi/2,0,0,0,0];
-        poseGuess = deg2rad([0,-135,90,-45,90,0]);
+        poseGuess = deg2rad([0,-60,120,-60,-90,0]);
         itemGuess =[3*pi/4,45,90,-45,90,0];
         %scanGuess = robot.model.ikcon(transl(0.3,1.8,0.85));
         %bag = robot.model.ikcon(transl(-0.5,0.3,0.5));
@@ -52,7 +52,7 @@ classdef AldyBaggerBot
             catch
                 qStart = self.homePose;
             end
-            qEnd = self.robot.model.ikcon(endTransform);
+            qEnd = self.robot.model.ikcon(endTransform, self.poseGuess);
             self.path = [self.path; jtraj(qStart, qEnd, steps)]; %add to path
         end
         
