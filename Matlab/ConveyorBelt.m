@@ -57,6 +57,9 @@ classdef ConveyorBelt
             
             %step each item
             for i = 1:self.maxItemCount
+                if self.items{i}.bagged == true
+                   continue 
+                end
                 if self.items{i}.onBelt == true
                     self.items{i}.transform(2, 4) = self.items{i}.transform(2, 4) + self.speed/1000;
                     self.items{i} = self.items{i}.moveItem(self.items{i}.transform);
@@ -66,13 +69,16 @@ classdef ConveyorBelt
         
         function t = laserTriggered(self)
             t = false;
+            size(self.items)
             for i = 1:size(self.items, 2)
                 if self.items{i}.bagged == true
                     continue
                 end
-                if self.items{i}.transform(2, 4) > self.transform(2, 4) %check each item on belt
-                    t = true;
-                    return;
+                if self.items{i}.transform(2, 4) > self.transform(2, 4)
+                    if self.items{i}.transform(3, 4) < self.transform(3, 4) + 0.5 %check each item on belt
+                        t = true;
+                        return;
+                    end
                 end
             end
         end

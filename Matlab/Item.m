@@ -6,9 +6,9 @@ classdef Item
         
         transform;
 		body;
-        onBelt = false;
-        readyToCollect = false;
-        bagged = false;
+        onBelt = false; %goes true when item is enabled
+        readyToCollect = false; %goes true when laser is triggered
+        bagged = false; %goes true when robot touches item < 0.05m
 
 		% optional properties
 		heavy = true; %for checking/sorting

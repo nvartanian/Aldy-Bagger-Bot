@@ -84,15 +84,22 @@ classdef AldyStore
                 return
             end
             
-            for i = 1:size(self.ConveyorBelt.items)
-                if self.ConveyorBelt.items{i}.onBelt ~= true
+            for i = 1:size(self.ConveyorBelt.items,2)
+                if max(abs(self.AldyBaggerBot.robot.model.fkine(self.AldyBaggerBot.robot.model.getpos) - self.ConveyorBelt.items{i}.transform)) < 0.005
+                    self.ConveyorBelt.items{i}.bagged = true;
+                end
+                if self.ConveyorBelt.items{i}.readyToCollect ~= true
                     %warning('Item %d is not on the belt, continuing to next item', i);
                     continue
                 end
-                if self.ConveyorBelt.items{i}.bagged ~= false
-                    %warning('Item %d is already bagged, continuing to next item', i);
-                    continue
-                end
+%                 if self.ConveyorBelt.items{i}.onBelt ~= true
+%                     %warning('Item %d is not on the belt, continuing to next item', i);
+%                     continue
+%                 end
+%                 if self.ConveyorBelt.items{i}.bagged ~= false
+%                     %warning('Item %d is already bagged, continuing to next item', i);
+%                     continue
+%                 end
                 if self.AldyBaggerBot.inRange(self.ConveyorBelt.items{i}.transform) ~= true
                     %warning('Item %d is not in range, continuing to next item', i);
                     continue
@@ -101,14 +108,14 @@ classdef AldyStore
                     try self.BaggingArea.nextHeavyBag() ~= false
                     catch
                         self = self.generateBaggingPath(self.AldyBaggerBot, self.ConveyorBelt.items{i}, self.BaggingArea.nextHeavyBag());
-                        self.ConveyorBelt.items{i}.bagged = true;
+                        self.ConveyorBelt.items{i}.readyToCollect = true;
                         return
                     end
                 else %find a bag spot that can take a light item
                     try self.BaggingArea.nextLightBag() ~= false
                     catch
                         self = self.generateBaggingPath(self.AldyBaggerBot, self.ConveyorBelt.items{i}, self.BaggingArea.nextLightBag());
-                        self.ConveyorBelt.items{i}.bagged = true;
+                        self.ConveyorBelt.items{i}.readyToCollect = true;
                         return
                     end
                 end

@@ -41,6 +41,7 @@ while true
             %error, stop
     end
     env = env.stepStore();
+    drawnow();
     timestep = timestep+1;
     pause(0.04 - toc) %25hz
 end
