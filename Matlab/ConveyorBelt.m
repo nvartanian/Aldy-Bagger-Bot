@@ -34,7 +34,8 @@ classdef ConveyorBelt
         %methods
         function self = stepBeltY(self)  
             %check if laser is triggered
-            if self.laserTriggered()
+            if self.laserTriggered() == true
+                self = self.laserUpdate();
                 return %stop item spawning, dont step belt
             end
             
@@ -66,8 +67,23 @@ classdef ConveyorBelt
         function t = laserTriggered(self)
             t = false;
             for i = 1:size(self.items, 2)
+                if self.items{i}.bagged == true
+                    continue
+                end
                 if self.items{i}.transform(2, 4) > self.transform(2, 4) %check each item on belt
                     t = true;
+                    return;
+                end
+            end
+        end
+        
+        function self = laserUpdate(self)
+            for i = 1:size(self.items, 2)
+                if self.items{i}.bagged == true
+                    continue
+                end
+                if self.items{i}.transform(2, 4) > self.transform(2, 4) %check each item on belt
+                    self.items{i}.readyToCollect = true;
                     return;
                 end
             end

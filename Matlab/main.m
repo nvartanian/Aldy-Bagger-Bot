@@ -17,7 +17,7 @@ robot = AldyBaggerBot(UR3, gripper);
 env = AldyStore(robot);
 
 %run
-state = 0;
+state = 1;
 timestep = 0;
 while true
     tic  

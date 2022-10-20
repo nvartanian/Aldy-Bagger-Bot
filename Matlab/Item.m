@@ -7,6 +7,7 @@ classdef Item
         transform;
 		body;
         onBelt = false;
+        readyToCollect = false;
         bagged = false;
 
 		% optional properties
