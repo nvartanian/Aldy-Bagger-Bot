@@ -146,7 +146,7 @@ classdef AldyStore
         
         function self = generateBaggingPath(self, AldyBaggerBot, itemIndex, slotTransform)            
             %determine robot approach item pose
-            self.ConveyorBelt.items{itemIndex}.wayPoints{1} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.2) * trotx(deg2rad(180));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{1} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.15) * trotx(deg2rad(180));
             
             %robot grab item
             self.ConveyorBelt.items{itemIndex}.wayPoints{2} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.1) * trotx(deg2rad(180));
