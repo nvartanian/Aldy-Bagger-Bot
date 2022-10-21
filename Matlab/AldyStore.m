@@ -23,8 +23,8 @@ classdef AldyStore
             obj.AldyBaggerBot = AldyBaggerBot;
             obj.AldyBaggerBot.robot.model.base = obj.transform * transl(0, 1.75, 0.75) * trotz(pi);
             obj.AldyBaggerBot.robot.model.animate(obj.AldyBaggerBot.homePose);
-            beltT = obj.transform * transl(0.1, 1.45, 0.75);
-            obj.ConveyorBelt = ConveyorBelt(beltT, 3, 0.3); %create ConveyorBelt obj
+            beltT = obj.transform * transl(0.11, 1.45, 0.75);
+            obj.ConveyorBelt = ConveyorBelt(beltT, 3, 0.2); %create ConveyorBelt obj
             obj.BaggingArea = BaggingArea(obj.transform * transl(0.12, 2.1, 0.75) * trotz(deg2rad(0))); %create BaggingArea obj
             
             %setup environment
@@ -169,7 +169,7 @@ classdef AldyStore
             self.ConveyorBelt.items{itemIndex}.wayPoints{7} = slotTransform * transl(0, 0, 0.2) * trotx(deg2rad(180)) * trotz(deg2rad(90));
             
             %robot move to home pose
-            self.ConveyorBelt.items{itemIndex}.wayPoints{8} = self.AldyBaggerBot.robot.model.fkine(AldyBaggerBot.homePose);
+            %self.ConveyorBelt.items{itemIndex}.wayPoints{8} = self.AldyBaggerBot.robot.model.fkine(AldyBaggerBot.homePose);
             for i = 1:size(self.ConveyorBelt.items{itemIndex}.wayPoints, 2)
                 self.AldyBaggerBot = self.AldyBaggerBot.addTraj(self.ConveyorBelt.items{itemIndex}.wayPoints{i});
             end

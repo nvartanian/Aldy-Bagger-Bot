@@ -29,14 +29,14 @@ classdef Item
                 if rand() > 0.5
                     [faceData, vertexData, plyData] = plyread('cannedTomato.ply','tri');
                 else
-                    [faceData, vertexData, plyData] = plyread('HalfSizedRedGreenBrick.ply','tri');
+                    [faceData, vertexData, plyData] = plyread('foodBox.ply','tri');
                 end
             else
                 obj.heavy = false;
                 if rand() > 0.5
-                    [faceData, vertexData, plyData] = plyread('HalfSizedRedGreenBrick.ply','tri');
+                    [faceData, vertexData, plyData] = plyread('lettuce.ply','tri');
                 else
-                    [faceData, vertexData, plyData] = plyread('HalfSizedRedGreenBrick.ply','tri');
+                    [faceData, vertexData, plyData] = plyread('tomato.ply','tri');
                 end
             end
             
