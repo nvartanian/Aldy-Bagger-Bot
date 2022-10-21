@@ -144,13 +144,13 @@ classdef AldyStore
         
         function self = generateBaggingPath(self, AldyBaggerBot, itemIndex, Bag)            
             %determine robot approach item pose
-            self.ConveyorBelt.items{itemIndex}.wayPoints{1} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.2) * trotx(deg2rad(180));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{1} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.15) * trotx(deg2rad(180));
             
             %robot grab item
             self.ConveyorBelt.items{itemIndex}.wayPoints{2} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.1) * trotx(deg2rad(180));
             
             %robot move to safe pose
-            self.ConveyorBelt.items{itemIndex}.wayPoints{3} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.2) * trotx(deg2rad(180));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{3} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.15) * trotx(deg2rad(180));
             
             %robot move past scanner
             self.ConveyorBelt.items{itemIndex}.wayPoints{4} = self.scanTransform;
@@ -160,13 +160,13 @@ classdef AldyStore
             if self.ConveyorBelt.items{itemIndex}.heavy == false
                 tb = Bag.nextHeavySlotTransform();
             end
-            self.ConveyorBelt.items{itemIndex}.wayPoints{5} = tb * transl(0, 0, 0.2) * trotx(deg2rad(180)) * trotz(deg2rad(90));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{5} = tb * transl(0, 0, 0.2) * trotx(deg2rad(180)) * trotz(deg2rad(-90));
             
             %robot place item
-            self.ConveyorBelt.items{itemIndex}.wayPoints{6} = tb * trotx(deg2rad(180)) * trotz(deg2rad(90));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{6} = tb * trotx(deg2rad(180)) * trotz(deg2rad(-90));
             
             %robot move away from bag
-            self.ConveyorBelt.items{itemIndex}.wayPoints{7} = tb * transl(0, 0, 0.2) * trotx(deg2rad(180)) * trotz(deg2rad(90));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{7} = tb * transl(0, 0, 0.2) * trotx(deg2rad(180)) * trotz(deg2rad(-90));
             
             %robot move to home pose
             self.ConveyorBelt.items{itemIndex}.wayPoints{8} = self.AldyBaggerBot.robot.model.fkine(AldyBaggerBot.homePose);
