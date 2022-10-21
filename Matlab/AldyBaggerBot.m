@@ -4,7 +4,7 @@ classdef AldyBaggerBot
         gripper;
         
         homePose = [0,-pi/2,0,0,0,0];
-        poseGuess = deg2rad([0,-60,120,-60,-90,0]);
+        poseGuess = deg2rad([0,-60,120,-150,-90,0]);
         itemGuess =[3*pi/4,45,90,-45,90,0];
         %scanGuess = robot.model.ikcon(transl(0.3,1.8,0.85));
         %bag = robot.model.ikcon(transl(-0.5,0.3,0.5));

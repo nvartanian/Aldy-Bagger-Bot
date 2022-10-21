@@ -76,7 +76,6 @@ classdef ConveyorBelt
         
         function t = laserTriggered(self)
             t = false;
-            size(self.items)
             for i = 1:size(self.items, 2)
                 if self.items{i}.bagged == true
                     continue
@@ -105,7 +104,11 @@ classdef ConveyorBelt
         function self = spawnItems(self)
             for i = 1:self.maxItemCount
                 t = self.transform * transl((self.width * rand()) - self.width/2, -self.length/1.1, -0.5) * trotz(2*pi*rand());
-                self.items{i} = Item(['item',num2str(i)],t);
+                if rand() > 0.5
+                    self.items{i} = Item(['item',num2str(i)], t, true);
+                else
+                    self.items{i} = Item(['item',num2str(i)], t, false);
+                end
             end
         end
         

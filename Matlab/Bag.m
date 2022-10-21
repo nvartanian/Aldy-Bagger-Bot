@@ -5,11 +5,15 @@ classdef Bag
         
         noOfHeavySlots = 2;
         noOfLightSlots = 2;
-        heavySlotsOffsets = {transl(0, 0.1, 0.01), transl(0, -0.1, 0.01)}; %hard-coded offsets for bag geometry position relative to base transform
-        lightSlotsOffsets = {transl(0, 0.1, 0.11), transl(0, -0.1, 0.11)}; %hard-coded offsets for bag geometry position relative to base transform
+        heavySlotsOffsets = {transl(0, 0.05, 0.01), transl(0, -0.05, 0.01)}; %hard-coded offsets for bag geometry position relative to base transform
+        lightSlotsOffsets = {transl(0, 0.05, 0.11), transl(0, -0.05, 0.11)}; %hard-coded offsets for bag geometry position relative to base transform
         
         heavySlotsFull = {};
         lightSlotsFull = {};
+        
+        heavySlotsTransform = {};
+        lightSlotsTransform = {};
+        
 	end
 	methods
         %constructor
@@ -30,32 +34,21 @@ classdef Bag
             for i = 1:obj.noOfLightSlots
                 obj.lightSlotsFull{i} = false;
             end
+            
+            for i = 1:obj.noOfHeavySlots
+                obj.heavySlotsTransform{i} = obj.transform * obj.heavySlotsOffsets{i};
+                %trplot(obj.transform * obj.heavySlotsOffsets{i});
+            end
+            for i = 1:obj.noOfLightSlots
+                obj.lightSlotsTransform{i} = obj.transform * obj.lightSlotsOffsets{i};
+                %trplot(obj.transform * obj.lightSlotsOffsets{i});
+            end
         end
         
         function self = moveBag(self, transform)
             self.transform = transform;
             self.body.base = transform;
             self.body.animate(0);
-        end
-        
-        function t = nextHeavySlotTransform(self)
-            for i = 1:size(self.heavySlotsFull)
-                if self.heavySlotsFull{i} == false
-                    t = self.transform * self.heavySlotsOffsets{i}; %found an empty slot
-                    return;
-                end
-            end
-            t = false; %no heavy slots available
-        end
-        
-        function t = nextLightSlotTransform(self)
-            for i = 1:size(self.lightSlotsFull)
-                if self.lightSlotsFull{i} == false
-                    t = self.transform * self.lightSlotsOffsets{i}; %found an empty slot
-                    return;
-                end
-            end
-            t = false; %no light slots available
         end
         
 	end

@@ -17,28 +17,32 @@ classdef BaggingArea
             end
         end
         
-        function bag = nextHeavyBag(self)
-            for i = 1:size(self.bags)
-                for j = 1:size(self.bags{i})
+        function [bagIndex, slotIndex] = nextHeavyBag(self)
+            for i = 1:size(self.bags, 2)
+                for j = 1:size(self.bags{i}.heavySlotsFull, 2)
                     if self.bags{i}.heavySlotsFull{j} == false
-                        bag = self.bags{i}; %found an empty slot
+                        bagIndex = i;
+                        slotIndex = j;%found an empty slot
                         return;
                     end
                 end
             end
-            bag = false;
+            bagIndex = false;
+            slotIndex = false;
         end
         
-        function bag = nextLightBag(self)
-            for i = 1:size(self.bags)
-                for j = 1:size(self.bags{i})
+        function [bagIndex, slotIndex] = nextLightBag(self)
+            for i = 1:size(self.bags, 2)
+                for j = 1:size(self.bags{i}.lightSlotsFull, 2)
                     if self.bags{i}.lightSlotsFull{j} == false
-                        bag = self.bags{i}; %found an empty slot
+                        bagIndex = i;
+                        slotIndex = j;%found an empty slot
                         return;
                     end
                 end
             end
-            bag = false;
+            bagIndex = false;
+            slotIndex = false;
         end
         
         function self = changeBag(self, bagIndex)

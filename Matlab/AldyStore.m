@@ -10,7 +10,7 @@ classdef AldyStore
         ConveyorBelt; 
         BaggingArea; %need class for baggingArea and Bag
         
-        scanTransform = eye(4) * transl(0.3,1.8,0.85) * trotx(deg2rad(180)); %TODO, work out pose to pass scanner. Trial/error, plot transfrom and check.
+        scanTransform = eye(4) * transl(0.3,1.8,1) * trotx(deg2rad(180)); %TODO, work out pose to pass scanner. Trial/error, plot transfrom and check.
         
         %status
         idle = true;
@@ -23,9 +23,9 @@ classdef AldyStore
             obj.AldyBaggerBot = AldyBaggerBot;
             obj.AldyBaggerBot.robot.model.base = obj.transform * transl(0, 1.75, 0.75) * trotz(pi);
             obj.AldyBaggerBot.robot.model.animate(obj.AldyBaggerBot.homePose);
-            beltT = obj.transform * transl(0.1, 1.5, 0.75);
-            obj.ConveyorBelt = ConveyorBelt(beltT, 3, 0.4); %create ConveyorBelt obj
-            obj.BaggingArea = BaggingArea(obj.transform * transl(0.12, 2, 0.75) * trotz(deg2rad(0))); %create BaggingArea obj
+            beltT = obj.transform * transl(0.1, 1.45, 0.75);
+            obj.ConveyorBelt = ConveyorBelt(beltT, 3, 0.3); %create ConveyorBelt obj
+            obj.BaggingArea = BaggingArea(obj.transform * transl(0.12, 2.1, 0.75) * trotz(deg2rad(0))); %create BaggingArea obj
             
             %setup environment
             % Floor
@@ -65,7 +65,7 @@ classdef AldyStore
             % E-Stop (On Table)
             %eStopXYZ = [tableXYZ(1) - tableRad * 0.9,tableXYZ(2) + tableRad * 0.9,tableXYZ(3) + 0.445];
             %PlaceObject('eStop.ply',eStopXYZ);
-
+            
             %safety features
             %e-stop
             
@@ -123,16 +123,18 @@ classdef AldyStore
                     continue
                 end
                 if self.ConveyorBelt.items{i}.heavy == true %find a bag spot that can take a heavy item
-                    try self.BaggingArea.nextHeavyBag() ~= false;
-                    catch
-                        self = self.generateBaggingPath(self.AldyBaggerBot, i, self.BaggingArea.nextHeavyBag());
+                    [bagIndex, slotIndex] = self.BaggingArea.nextHeavyBag();
+                    if isa(bagIndex, 'bool') ~= true
+                        self.BaggingArea.bags{bagIndex}.heavySlotsFull{slotIndex} = true;
+                        self = self.generateBaggingPath(self.AldyBaggerBot, i, self.BaggingArea.bags{bagIndex}.heavySlotsTransform{slotIndex}*transl(0,0,0.1));
                         self.ConveyorBelt.items{i}.trajCalculated = true;
                         return
                     end
                 else %find a bag spot that can take a light item
-                    try self.BaggingArea.nextLightBag() ~= false;
-                    catch
-                        self = self.generateBaggingPath(self.AldyBaggerBot, i, self.BaggingArea.nextLightBag());
+                    [bagIndex, slotIndex] = self.BaggingArea.nextLightBag();
+                    if isa(bagIndex, 'bool') ~= true
+                        self.BaggingArea.bags{bagIndex}.lightSlotsFull{slotIndex} = true;
+                        self = self.generateBaggingPath(self.AldyBaggerBot, i, self.BaggingArea.bags{bagIndex}.lightSlotsTransform{slotIndex}*transl(0,0,0.1));
                         self.ConveyorBelt.items{i}.trajCalculated = true;
                         return
                     end
@@ -142,7 +144,7 @@ classdef AldyStore
             end
         end
         
-        function self = generateBaggingPath(self, AldyBaggerBot, itemIndex, Bag)            
+        function self = generateBaggingPath(self, AldyBaggerBot, itemIndex, slotTransform)            
             %determine robot approach item pose
             self.ConveyorBelt.items{itemIndex}.wayPoints{1} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.2) * trotx(deg2rad(180));
             
@@ -150,27 +152,24 @@ classdef AldyStore
             self.ConveyorBelt.items{itemIndex}.wayPoints{2} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.1) * trotx(deg2rad(180));
             
             %robot move to safe pose
-            self.ConveyorBelt.items{itemIndex}.wayPoints{3} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.2) * trotx(deg2rad(180));
+            t = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.2) * trotx(deg2rad(180));
+            t(1:3, 1:3) = self.scanTransform(1:3, 1:3);
+            self.ConveyorBelt.items{itemIndex}.wayPoints{3} = t;
             
             %robot move past scanner
             self.ConveyorBelt.items{itemIndex}.wayPoints{4} = self.scanTransform;
             
             %robot approach bag
-            tb = Bag.nextLightSlotTransform();
-            if self.ConveyorBelt.items{itemIndex}.heavy == false
-                tb = Bag.nextHeavySlotTransform();
-            end
-            self.ConveyorBelt.items{itemIndex}.wayPoints{5} = tb * transl(0, 0, 0.2) * trotx(deg2rad(180)) * trotz(deg2rad(90));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{5} = slotTransform * transl(0, 0, 0.2) * trotx(deg2rad(180)) * trotz(deg2rad(90));
             
             %robot place item
-            self.ConveyorBelt.items{itemIndex}.wayPoints{6} = tb * trotx(deg2rad(180)) * trotz(deg2rad(90));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{6} = slotTransform * trotx(deg2rad(180)) * trotz(deg2rad(90));
             
             %robot move away from bag
-            self.ConveyorBelt.items{itemIndex}.wayPoints{7} = tb * transl(0, 0, 0.2) * trotx(deg2rad(180)) * trotz(deg2rad(90));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{7} = slotTransform * transl(0, 0, 0.2) * trotx(deg2rad(180)) * trotz(deg2rad(90));
             
             %robot move to home pose
             self.ConveyorBelt.items{itemIndex}.wayPoints{8} = self.AldyBaggerBot.robot.model.fkine(AldyBaggerBot.homePose);
-            size(self.ConveyorBelt.items{itemIndex}.wayPoints, 2)
             for i = 1:size(self.ConveyorBelt.items{itemIndex}.wayPoints, 2)
                 self.AldyBaggerBot = self.AldyBaggerBot.addTraj(self.ConveyorBelt.items{itemIndex}.wayPoints{i});
             end

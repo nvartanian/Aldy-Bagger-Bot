@@ -20,16 +20,39 @@ classdef Item
 	end
 	methods
         %constructor
-        function obj = Item(name, transform)
+        function obj = Item(name, transform, isHeavy)
             obj.transform = transform;
             L1 = Link('alpha',0,'a',0,'d',0,'offset',0);
             obj.body = SerialLink(L1,'name',name);
             obj.body.base = transform;
+            if isHeavy == true
+                if rand() > 0.5
+                    [faceData, vertexData, plyData] = plyread('cannedTomato.ply','tri');
+                else
+                    [faceData, vertexData, plyData] = plyread('HalfSizedRedGreenBrick.ply','tri');
+                end
+            else
+                obj.heavy = false;
+                if rand() > 0.5
+                    [faceData, vertexData, plyData] = plyread('HalfSizedRedGreenBrick.ply','tri');
+                else
+                    [faceData, vertexData, plyData] = plyread('HalfSizedRedGreenBrick.ply','tri');
+                end
+            end
             
-            [faceData,vertexData] = plyread('HalfSizedRedGreenBrick.ply','tri');
             obj.body.faces = {faceData,[]};
             obj.body.points = {vertexData,[]};
             plot3d(obj.body,0,'delay',0);
+            handles = findobj('Tag', obj.body.name);
+            h = get(handles,'UserData');
+            try
+                h.link(1).Children.FaceVertexCData = [plyData.vertex.red ...
+                                                               ,plyData.vertex.green ...
+                                                               ,plyData.vertex.blue]/255;
+                h.link(1).Children.FaceColor = 'interp';
+            catch ME_1
+                disp(ME_1);
+            end
         end
         
         function self = moveItem(self, transform)
