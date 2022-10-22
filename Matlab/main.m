@@ -14,35 +14,16 @@ end
 %initialise environment
 gripper = "gripperClass";
 robot = AldyBaggerBot(UR3, gripper);
-robot.robot.model.qlim = deg2rad([-160,130;-160,40;-20,250;-160,40;-110,190;-360,360;]);
+robot.robot.model.qlim = deg2rad([-160,130;-160,40;-20,250;-190,40;-110,190;-360,360;]);
 env = AldyStore(robot);
 gui = AldyGUI(env);
 
-%state = 0;
 %run
 timestep = 0;
 %profile on
 while true
     tic  
     timestep
-%     switch state
-%         case 0
-%             %idle, no errors, waiting for start button press, return to home
-%             env.idle = true;
-%         case 1
-%             %packing bags
-%             env.idle = false;
-%         case 2
-%             %both bags full, waiting for bags to be reset and start button press
-%             env.idle = true;
-%         case 3
-%             %stopped, errors (such as eStop)
-%         case 4
-%             %safe / jog
-% 
-%         otherwise
-%             %error, stop
-%    end
     env = gui.updateEnv(env);
     env = env.stepStore();
     gui = gui.updateGUI(env);

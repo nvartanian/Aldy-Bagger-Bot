@@ -97,6 +97,7 @@ classdef AldyStore
                     %check place brick
                     if max(max(abs(self.AldyBaggerBot.robot.model.fkine(self.AldyBaggerBot.robot.model.getpos) - self.ConveyorBelt.items{i}.wayPoints{6}))) < 0.005
                         self.ConveyorBelt.items{i}.bagged = true;
+                        %open gripper
                         continue
                     end
                     %not at bag yet, keep brick on robot
@@ -106,8 +107,15 @@ classdef AldyStore
                 if self.ConveyorBelt.items{i}.trajCalculated ~= false
                     %traj calculated but not yet on robot
                     %check collect brick
+                    if max(max(abs(self.AldyBaggerBot.robot.model.fkine(self.AldyBaggerBot.robot.model.getpos) - self.ConveyorBelt.items{i}.wayPoints{1}))) < 0.005
+                        %start closing gripper, use same number of steps as
+                        %robot traj calculation, add a closing traj to
+                        %gripper. need a step gripper --> inside
+                        %aldybaggerbot object
+                    end
                     if max(max(abs(self.AldyBaggerBot.robot.model.fkine(self.AldyBaggerBot.robot.model.getpos) - self.ConveyorBelt.items{i}.wayPoints{2}))) < 0.005
                         self.ConveyorBelt.items{i}.onRobot = true;
+                        %gripper should be closed
                     end
                     continue
                 end

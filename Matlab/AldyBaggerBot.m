@@ -26,6 +26,10 @@ classdef AldyBaggerBot
         %methods
         function self = stepRobot(self)
             if self.eStop == false
+                %gripper movement
+                
+                
+                %robot movement
                 if size(self.path, 1) > 0
                     self.robot.model.animate(self.path(1,:)); %move to next pose in path
                     if size(self.path, 1) > 2
