@@ -23,7 +23,7 @@ classdef AldyStore
             obj.AldyBaggerBot = AldyBaggerBot;
             obj.AldyBaggerBot.robot.model.base = obj.transform * transl(0, 1.75, 0.75) * trotz(pi);
             obj.AldyBaggerBot.robot.model.animate(obj.AldyBaggerBot.homePose);
-            beltT = obj.transform * transl(0.11, 1.45, 0.75);
+            beltT = obj.transform * transl(0.11, 1.5, 0.75);
             obj.ConveyorBelt = ConveyorBelt(beltT, 3, 0.2); %create ConveyorBelt obj
             obj.BaggingArea = BaggingArea(obj.transform * transl(0.12, 2.1, 0.75) * trotz(deg2rad(0))); %create BaggingArea obj
             
@@ -77,12 +77,11 @@ classdef AldyStore
         end
         
         function self = stepStore(self)
-            self.ConveyorBelt = self.ConveyorBelt.stepBeltY();
-            self.AldyBaggerBot = self.AldyBaggerBot.stepRobot();
-            
+            self.ConveyorBelt = self.ConveyorBelt.stepBeltY(); 
             if self.idle ~= false
                 return
             end
+            self.AldyBaggerBot = self.AldyBaggerBot.stepRobot();
             
             for i = 1:size(self.ConveyorBelt.items,2)
                 if self.ConveyorBelt.items{i}.bagged ~= false
