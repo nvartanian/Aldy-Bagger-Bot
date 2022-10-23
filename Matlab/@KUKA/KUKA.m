@@ -61,7 +61,7 @@ classdef KUKA < handle
             self.model.delay = 0;
 
             %Try to correctly colour the arm (if colours are in ply file data)
-            %{
+            
             for linkIndex = 0:self.model.n
                 handles = findobj('Tag', self.model.name);
                 h = get(handles,'UserData');
@@ -75,7 +75,7 @@ classdef KUKA < handle
                     continue;
                 end
             end
-            %}
+            
         end
     end
 end
