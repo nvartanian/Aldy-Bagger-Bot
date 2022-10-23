@@ -12,9 +12,10 @@ catch exception
 end
 
 %initialise environment
-gripper = "gripperClass";
-robotUR3 = AldyBaggerBot6DOF(UR3, gripper);
-robotKUKA = AldyBaggerBot7DOF(KUKA, gripper);
+gripper1 = Gripper('grip1');
+gripper2 = Gripper('grip2');
+robotUR3 = AldyBaggerBot6DOF(UR3, gripper1);
+robotKUKA = AldyBaggerBot7DOF(KUKA, gripper2);
 robotUR3.robot.model.qlim = deg2rad([-160,130;-160,40;-20,250;-190,40;-110,190;-360,360;]);
 env = AldyStore(robotUR3,robotKUKA);
 gui = AldyGUI(env);

@@ -1,5 +1,7 @@
 classdef Gripper < handle
     properties
+        name;
+        
         Base;
         LeftFinger;
         RightFinger;
@@ -9,57 +11,52 @@ classdef Gripper < handle
     end
     
     methods%% Class for Gripper robot simulation
-        function self = Gripper(base)
-            % robot =
-            self.GetBase();
-            self.GetLeftFinger();
-            self.GetRightFinger();
-            
-            self.Base.base = base;
-            self.LeftFinger.base = self.Base.base * transl(0, 0, 0.08) * trotx(deg2rad(-90));
-            self.RightFinger.base = self.Base.base * transl(0, 0, 0.08) * trotx(deg2rad(90));
+        function obj = Gripper(name)
+            obj.name = name;
             
             % robot =
-            self.PlotAndColourRobot();%robot,workspace);
+            obj.GetBase();
+            obj.GetLeftFinger();
+            obj.GetRightFinger();
+            
+            obj.Base.base = eye(4);
+            obj.LeftFinger.base = obj.Base.base * transl(-0.038, 0, 0.055) * trotx(deg2rad(-90));
+            obj.RightFinger.base = obj.Base.base * transl(0.038, 0, 0.055) * trotx(deg2rad(90));
+            
+            % robot =
+            obj.PlotAndColourRobot();%robot,workspace);
         end
         
         function self = moveGripper(self, newBase, jawQ)
             self.Base.base = newBase;
             self.Base.animate(0);
-            self.LeftFinger.base = self.Base.base * transl(0, 0, 0.08) * trotx(deg2rad(-90));
+            self.LeftFinger.base = self.Base.base * transl(-0.038, 0, 0.055) * trotx(deg2rad(-90));
             self.LeftFinger.animate(jawQ(1));
-            self.RightFinger.base = self.Base.base * transl(0, 0, 0.08) * trotx(deg2rad(90));
+            self.RightFinger.base = self.Base.base * transl(0.038, 0, 0.055) * trotx(deg2rad(90));
             self.RightFinger.animate(jawQ(2));
         end
+        
         %% GetGripperRobot
-        function GetBase(self)
-            pause(0.001);
-            name = ['Gripper_Base_',datestr(now,'yyyymmddTHHMMSSFFF')];
-            
+        function self = GetBase(self)
+            n = ['Gripper_Base_',self.name];     
             % Create the Left Finger model
             L(1) = Link('d',0,'a',0,'alpha',0,'qlim',0,'offset',0);
             
-            self.Base = SerialLink(L,'name',name);
+            self.Base = SerialLink(L,'name',n);
         end
         
-        function GetLeftFinger(self)
-            pause(0.001);
-            name = ['Gripper_Left_',datestr(now,'yyyymmddTHHMMSSFFF')];
-            
+        function self = GetLeftFinger(self)
+            n = ['Gripper_Left_',self.name];
             % Create the Left Finger model
             L(1) = Link('d',0,'a',0,'alpha',deg2rad(90),'qlim',deg2rad([-360 360]), 'offset',0);
-            
-            self.LeftFinger = SerialLink(L,'name',name);
+            self.LeftFinger = SerialLink(L,'name',n);
         end
         
-        function GetRightFinger(self)
-            pause(0.001);
-            name = ['Gripper_Right_',datestr(now,'yyyymmddTHHMMSSFFF')];
-            
+        function self = GetRightFinger(self)
+            n = ['Gripper_Right_',self.name];
             % Create the Left Finger model
             L(1) = Link('d',0,'a',0,'alpha',deg2rad(-90),'qlim',deg2rad([-360 360]), 'offset',0);
-            
-            self.RightFinger = SerialLink(L,'name',name);
+            self.RightFinger = SerialLink(L,'name',n);
         end
         
         %% PlotAndColourRobot
@@ -75,13 +72,13 @@ classdef Gripper < handle
             end
             
             for linkIndex = 1:self.LeftFinger.n
-                [ faceData, vertexData, plyData{linkIndex+1} ] = plyread('gripper_Left.ply','tri'); %#ok<AGROW>
+                [ faceData, vertexData, plyData{linkIndex+1} ] = plyread('gripper_Left.ply','tri');
                 self.LeftFinger.faces{linkIndex+1} = faceData;
                 self.LeftFinger.points{linkIndex+1} = vertexData;
             end
             
             for linkIndex = 1:self.RightFinger.n
-                [ faceData, vertexData, plyData{linkIndex+1} ] = plyread('gripper_Right.ply','tri'); %#ok<AGROW>
+                [ faceData, vertexData, plyData{linkIndex+1} ] = plyread('gripper_Right.ply','tri');
                 self.RightFinger.faces{linkIndex+1} = faceData;
                 self.RightFinger.points{linkIndex+1} = vertexData;
             end

@@ -18,7 +18,9 @@ classdef AldyStore
         
         personVertices;
         
-        scanTransform = eye(4) * transl(0.3,1.8,1) * trotx(deg2rad(180)); %TODO, work out pose to pass scanner. Trial/error, plot transfrom and check.
+        gripperOffset = transl(0,0,0.22);
+        
+        scanTransform = eye(4) * transl(0.28,1.8,1.1) * trotx(deg2rad(180)); %TODO, work out pose to pass scanner. Trial/error, plot transfrom and check.
         
         %status
         idle = true;
@@ -30,14 +32,18 @@ classdef AldyStore
         function obj = AldyStore(AldyBaggerBot6DOF,AldyBaggerBot7DOF)
             obj.AldyBaggerBotUR3 = AldyBaggerBot6DOF;
             obj.AldyBaggerBotUR3.robot.model.base = obj.transform * transl(0, 1.75, 0.75) * trotz(pi);
+            obj.AldyBaggerBotUR3.gripper.moveGripper(obj.AldyBaggerBotUR3.robot.model.fkine(obj.AldyBaggerBotUR3.homePose), [0,0]);
             obj.AldyBaggerBotUR3.robot.model.animate(obj.AldyBaggerBotUR3.homePose);
+            obj.AldyBaggerBotUR3.gripper.LeftFinger.animate(deg2rad(-30));
+            obj.AldyBaggerBotUR3.gripper.RightFinger.animate(deg2rad(-30));
             
             obj.AldyBaggerBotKUKA = AldyBaggerBot7DOF; % add kuka bot
             obj.AldyBaggerBotKUKA.robot.model.base = obj.transform * transl(-0.3, 0.5, 0.8) * trotz(pi);
+            obj.AldyBaggerBotKUKA.gripper.moveGripper(obj.AldyBaggerBotKUKA.robot.model.fkine(obj.AldyBaggerBotKUKA.homePose), [0,0]);
             obj.AldyBaggerBotKUKA.robot.model.animate(obj.AldyBaggerBotKUKA.homePose);
             
             beltT = obj.transform * transl(0.11, 1.5, 0.75);
-            obj.ConveyorBelt = ConveyorBelt(beltT, 3, 0.2); %create ConveyorBelt obj
+            obj.ConveyorBelt = ConveyorBelt(beltT, 3, 0.1); %create ConveyorBelt obj
             obj.BaggingArea = BaggingArea(obj.transform * transl(0.12, 2.1, 0.75) * trotz(deg2rad(0))); %create BaggingArea obj
             
             %setup environment
@@ -138,10 +144,13 @@ classdef AldyStore
                     if max(max(abs(self.AldyBaggerBotUR3.robot.model.fkine(self.AldyBaggerBotUR3.robot.model.getpos) - self.ConveyorBelt.items{i}.wayPoints{6}))) < 0.005
                         self.ConveyorBelt.items{i}.bagged = true;
                         %open gripper
+                        if size(self.AldyBaggerBotUR3.gripperPath) < 1
+                            self.AldyBaggerBotUR3.gripperPath = jtraj([0,0], [deg2rad(-30),deg2rad(-30)], 50);
+                        end
                         continue
                     end
                     %not at bag yet, keep brick on robot
-                    self.ConveyorBelt.items{i} = self.ConveyorBelt.items{i}.moveItem(self.AldyBaggerBotUR3.robot.model.fkine(self.AldyBaggerBotUR3.robot.model.getpos) * transl(0,0,0.1) * trotx(deg2rad(180)));
+                    self.ConveyorBelt.items{i} = self.ConveyorBelt.items{i}.moveItem(self.AldyBaggerBotUR3.robot.model.fkine(self.AldyBaggerBotUR3.robot.model.getpos) * self.gripperOffset * trotx(deg2rad(180)));
                     continue
                 end
                 if self.ConveyorBelt.items{i}.trajCalculated ~= false
@@ -152,6 +161,9 @@ classdef AldyStore
                         %robot traj calculation, add a closing traj to
                         %gripper. need a step gripper --> inside
                         %aldybaggerbot object
+                        if size(self.AldyBaggerBotUR3.gripperPath) < 1
+                            self.AldyBaggerBotUR3.gripperPath = jtraj([deg2rad(-30),deg2rad(-30)], [0,0], 50);
+                        end
                     end
                     if max(max(abs(self.AldyBaggerBotUR3.robot.model.fkine(self.AldyBaggerBotUR3.robot.model.getpos) - self.ConveyorBelt.items{i}.wayPoints{2}))) < 0.005
                         self.ConveyorBelt.items{i}.onRobot = true;
@@ -165,7 +177,7 @@ classdef AldyStore
 %                     continue
 %                 end
 
-                if self.AldyBaggerBotUR3.inRange(self.ConveyorBelt.items{i}.transform * transl(0,0,0.2) * trotx(deg2rad(180))) ~= true
+                if self.AldyBaggerBotUR3.inRange(self.ConveyorBelt.items{i}.transform * self.gripperOffset * transl(0,0,0.05) * trotx(deg2rad(180))) ~= true
                     %warning('Item %d is not in range, continuing to next item', i);
                     continue
                 end
@@ -173,7 +185,7 @@ classdef AldyStore
                     [bagIndex, slotIndex] = self.BaggingArea.nextHeavyBag();
                     if isa(bagIndex, 'bool') ~= true
                         self.BaggingArea.bags{bagIndex}.heavySlotsFull{slotIndex} = true;
-                        self = self.generateBaggingPath(i, self.BaggingArea.bags{bagIndex}.heavySlotsTransform{slotIndex}*transl(0,0,0.1));
+                        self = self.generateBaggingPath(i, self.BaggingArea.bags{bagIndex}.heavySlotsTransform{slotIndex}*self.gripperOffset);
                         self.ConveyorBelt.items{i}.trajCalculated = true;
                         return
                     end
@@ -181,7 +193,7 @@ classdef AldyStore
                     [bagIndex, slotIndex] = self.BaggingArea.nextLightBag();
                     if isa(bagIndex, 'bool') ~= true
                         self.BaggingArea.bags{bagIndex}.lightSlotsFull{slotIndex} = true;
-                        self = self.generateBaggingPath(i, self.BaggingArea.bags{bagIndex}.lightSlotsTransform{slotIndex}*transl(0,0,0.1));
+                        self = self.generateBaggingPath(i, self.BaggingArea.bags{bagIndex}.lightSlotsTransform{slotIndex}*self.gripperOffset);
                         self.ConveyorBelt.items{i}.trajCalculated = true;
                         return
                     end
@@ -193,13 +205,13 @@ classdef AldyStore
         
         function self = generateBaggingPath(self, itemIndex, slotTransform)            
             %determine robot approach item pose
-            self.ConveyorBelt.items{itemIndex}.wayPoints{1} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.15) * trotx(deg2rad(180));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{1} = self.ConveyorBelt.items{itemIndex}.transform * self.gripperOffset * transl(0,0,0.05) * trotx(deg2rad(180));
             
             %robot grab item
-            self.ConveyorBelt.items{itemIndex}.wayPoints{2} = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.1) * trotx(deg2rad(180));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{2} = self.ConveyorBelt.items{itemIndex}.transform * self.gripperOffset * trotx(deg2rad(180));
             
             %robot move to safe pose
-            t = self.ConveyorBelt.items{itemIndex}.transform * transl(0,0,0.2) * trotx(deg2rad(180));
+            t = self.ConveyorBelt.items{itemIndex}.transform * self.gripperOffset * transl(0,0,0.05) * trotx(deg2rad(180));
             t(1:3, 1:3) = self.scanTransform(1:3, 1:3);
             self.ConveyorBelt.items{itemIndex}.wayPoints{3} = t;
             
@@ -207,13 +219,13 @@ classdef AldyStore
             self.ConveyorBelt.items{itemIndex}.wayPoints{4} = self.scanTransform;
             
             %robot approach bag
-            self.ConveyorBelt.items{itemIndex}.wayPoints{5} = slotTransform * transl(0, 0, 0.2) * trotx(deg2rad(180)) * trotz(deg2rad(90));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{5} = slotTransform * transl(0, 0, 0.1) * trotx(deg2rad(180));
             
             %robot place item
-            self.ConveyorBelt.items{itemIndex}.wayPoints{6} = slotTransform * trotx(deg2rad(180)) * trotz(deg2rad(90));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{6} = slotTransform * trotx(deg2rad(180));
             
             %robot move away from bag
-            self.ConveyorBelt.items{itemIndex}.wayPoints{7} = slotTransform * transl(0, 0, 0.2) * trotx(deg2rad(180)) * trotz(deg2rad(90));
+            self.ConveyorBelt.items{itemIndex}.wayPoints{7} = slotTransform * transl(0, 0, 0.1) * trotx(deg2rad(180));
             
             %robot move to home pose
             %self.ConveyorBelt.items{itemIndex}.wayPoints{8} = self.AldyBaggerBot.robot.model.fkine(AldyBaggerBot.homePose);

@@ -2,6 +2,7 @@ classdef AldyBaggerBot6DOF
     properties
         robot;
         gripper;
+        gripperPath = [];
         
         homePose = [0,-pi/2,0,0,0,0];
         poseGuess = deg2rad([0,-60,120,-150,-90,0]);
@@ -27,11 +28,23 @@ classdef AldyBaggerBot6DOF
         function self = stepRobot(self)
             if self.eStop == false
                 %gripper movement
+                if size(self.gripperPath, 2) > 0
+                    gripQ = self.gripperPath(1,:);
+                    if size(self.gripperPath, 1) > 2
+                        self.gripperPath = self.gripperPath(2:end,:); %remove from path
+                    else
+                        self.gripperPath = [];%last pose in path
+                    end
+                else
+                    gripQ(1) = self.gripper.LeftFinger.getpos;
+                    gripQ(2) = self.gripper.RightFinger.getpos;
+                end
                 
                 
                 %robot movement
                 if size(self.path, 1) > 0
                     self.robot.model.animate(self.path(1,:)); %move to next pose in path
+                    self.gripper.moveGripper(self.robot.model.fkine(self.path(1,:)), gripQ);
                     if size(self.path, 1) > 2
                         self.path = self.path(2:end,:); %remove from path
                     else
