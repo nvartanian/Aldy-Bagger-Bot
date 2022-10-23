@@ -20,7 +20,7 @@ classdef AldyStore
         
         gripperOffset = transl(0,0,0.22);
         
-        scanTransform = eye(4) * transl(0.28,1.8,1.1) * trotx(deg2rad(180)); %TODO, work out pose to pass scanner. Trial/error, plot transfrom and check.
+        scanTransform = eye(4) * transl(0.25,1.8,1.1) * trotx(deg2rad(180)); %TODO, work out pose to pass scanner. Trial/error, plot transfrom and check.
         
         %status
         idle = true;
