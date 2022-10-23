@@ -205,39 +205,53 @@ classdef AldyStore
             end
             
             %% kuka robot function
-            %{
-            for i = 1:size(self.BaggingArea.bags, 2)
-                if self.BaggingArea.bags{i}.heavySlotsFull{1} == true && self.BaggingArea.bags{i}.heavySlotsFull{2} == true && self.BaggingArea.bags{i}.lightSlotsFull{1} == true && self.BaggingArea.bags{i}.lightSlotsFull{2} == true
-                    fullBagIndex = i;
-                    return;
-                end
-                if self.BaggingArea.Bag{i}.onRobot == true
-                    %if the bag is already on the robot
-                    %check if the bag is near the end place
-                    if max(max(abs(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) - self.BaggingArea.Bag{bagIndex}.wayPoints2{3}))) < 0.005
-                        self.BaggingArea.Bag{i}.handOff = true; 
-                        %release bag
-                        continue
-                    end
-                    %not at bag yet, keep bag on robot
-                    self.BaggingArea.Bag{i} = self.BaggingArea.Bag{i}.moveBag(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) * transl(0,0.2,0) * trotx(deg2rad(-90)));
+            for i = 1:size(self.ConveyorBelt.items,2)
+                if self.ConveyorBelt.items{i}.bagged ~= false
+                    %warning('Item %d is already bagged, continuing to next item', i);
                     continue
                 end
-                if self.BaggingArea.Bag{i}.trajCalculated ~= false
-                    %traj calculated but not yet on robot
-                    %check if we are close enough to grab the bag
-                    if max(max(abs(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) - self.BaggingArea.Bag{bagIndex}.wayPoints2{1}))) < 0.005
-                        %grab object
-                        self.BaggingArea.Bag{i}.onRobot = true;
-                    end
-                end    
-                if %generate trajectory for bag handoff
-                    self = self.generateHandoffPath(self.AldyBaggerBotKUKA, i);
-                    self.BaggingArea.Bag{i}.trajCalculated = true;
-                    return 
+                if self.ConveyorBelt.items{i}.readyToCollect ~= true
+                    %warning('Item %d is not on the belt, continuing to next item', i);
+                    continue
                 end
-                %could not find a emptys return error TODO
-                disp('Can''t find a bag spot.')  
+                if self.ConveyorBelt.items{i}.onRobot == true
+                    %move item to robot
+                    %check if it is close to the goal
+                    if max(max(abs(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) - self.ConveyorBelt.items{i}.wayPoints{6}))) < 0.005
+                        %return item to the conveyer belt
+                        self.ConveyorBelt.items{i}.onRobot = false;
+                        continue
+                    end
+                    %not at bag yet, keep item on robot
+                    self.ConveyorBelt.items{i} = self.ConveyorBelt.items{i}.moveItem(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) * self.gripperOffset * trotx(deg2rad(180)));
+                    continue
+                end
+                if self.ConveyorBelt.items{i}.trajCalculatedAlign ~= false
+                    %align traj calculated but not yet on kuka
+                    %check if item is close enough to collect
+                    if max(max(abs(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) - self.ConveyorBelt.items{i}.wayPoints{1}))) < 0.005
+                        self.ConveyorBelt.items{i}.onRobot = true;
+                    end
+                    continue
+                end
+
+                if self.AldyBaggerBotKUKA.inRange(self.ConveyorBelt.items{i}.transform * self.gripperOffset * transl(0,0,0.05) * trotx(deg2rad(180))) ~= true
+                    %warning('Item %d is not in range, continuing to next item', i);
+                    continue
+                end
+                
+                if self.ConveyorBelt.items{i} %Find item to align
+                    [bagIndex, slotIndex] = self.BaggingArea.nextHeavyBag();
+                    if isa(bagIndex, 'bool') ~= true
+                        self.BaggingArea.bags{bagIndex}.heavySlotsFull{slotIndex} = true;
+                        self = self.generateBaggingPath(i, self.BaggingArea.bags{bagIndex}.heavySlotsTransform{slotIndex}*self.gripperOffset);
+                        self.ConveyorBelt.items{i}.trajCalculated = true;
+                        return
+                    end
+
+                end
+                %could not find a bag spot, return error TODO
+                 
             end
             %}
         end
@@ -273,7 +287,7 @@ classdef AldyStore
             end
         end
         
-        function self = generateHandoffPath(self, AldyBaggerBotKUKA, fullBagIndex)            
+        function self = generateAlignPath(self, AldyBaggerBotKUKA, itemIndex)            
             %determine robot approach bag pose
             self.BaggingArea.Bag{fullBagIndex}.wayPoints2{1} = self.BaggingArea.Bag{fullBagIndex}.transform * transl(0,0.2,0) * trotx(deg2rad(-90));
             
