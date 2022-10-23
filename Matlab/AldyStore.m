@@ -16,6 +16,8 @@ classdef AldyStore
         lightCurtainX = 0.9;
         lightCurtainY = 2.5;
         
+        personVertices;
+        
         scanTransform = eye(4) * transl(0.3,1.8,1) * trotx(deg2rad(180)); %TODO, work out pose to pass scanner. Trial/error, plot transfrom and check.
         
         %status
@@ -66,6 +68,8 @@ classdef AldyStore
 
             % Add Person
             personT = obj.transform * transl(1, 2, 0);
+            [f,v,data] = plyread('person.ply','tri');
+            obj.personVertices = v;
             obj.Person = Person('person1', personT);
             
             % Safety Features/Enviromental Objects
@@ -93,6 +97,7 @@ classdef AldyStore
         
         function self = stepStore(self)
             self.ConveyorBelt = self.ConveyorBelt.stepBeltY(); 
+            
             if self.lightCurtainEnabled == true
                 if self.Person.body.base(1, 4) < self.lightCurtainX
                     if self.Person.body.base(2, 4) < self.lightCurtainY
@@ -102,8 +107,16 @@ classdef AldyStore
                 end
             end
             
-            %collision detection checking
-                
+            % collision detection
+            collisionVertices = self.personVertices;
+            collisionVertices(:, 1) = collisionVertices(:, 1) + self.Person.body.base(1, 4);
+            collisionVertices(:, 2) = collisionVertices(:, 2) + self.Person.body.base(2, 4);
+            collisionVertices(:, 3) = collisionVertices(:, 3) + self.Person.body.base(3, 4);
+            if checkCollision(self.AldyBaggerBotUR3.robot.model, collisionVertices, 0.1) == true
+                self.eStop = true; %trigger E-stop.
+                return;
+            end
+
             if self.idle ~= false
                 return
             end
@@ -168,7 +181,7 @@ classdef AldyStore
                     [bagIndex, slotIndex] = self.BaggingArea.nextLightBag();
                     if isa(bagIndex, 'bool') ~= true
                         self.BaggingArea.bags{bagIndex}.lightSlotsFull{slotIndex} = true;
-                        self = self.generateBaggingPath(self.AldyBaggerBotUR3, i, self.BaggingArea.bags{bagIndex}.lightSlotsTransform{slotIndex}*transl(0,0,0.1));
+                        self = self.generateBaggingPath(i, self.BaggingArea.bags{bagIndex}.lightSlotsTransform{slotIndex}*transl(0,0,0.1));
                         self.ConveyorBelt.items{i}.trajCalculated = true;
                         return
                     end
