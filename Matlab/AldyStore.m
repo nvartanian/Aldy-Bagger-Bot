@@ -21,10 +21,12 @@ classdef AldyStore
         gripperOffset = transl(0,0,0.22);
         
         scanTransform = eye(4) * transl(0.25,1.8,1.1) * trotx(deg2rad(180)); %TODO, work out pose to pass scanner. Trial/error, plot transfrom and check.
+        kukaVSTransform = eye(4) * transl(0,1.2,1.2) * trotz(deg2rad(75));
         
         %status
         idle = true;
         eStop = false;
+        visualServoing = false
         
     end
     methods
@@ -199,8 +201,45 @@ classdef AldyStore
                     end
                 end
                 %could not find a bag spot, return error TODO
-                
+                 
             end
+            
+            %% kuka robot function
+            %{
+            for i = 1:size(self.BaggingArea.bags, 2)
+                if self.BaggingArea.bags{i}.heavySlotsFull{1} == true && self.BaggingArea.bags{i}.heavySlotsFull{2} == true && self.BaggingArea.bags{i}.lightSlotsFull{1} == true && self.BaggingArea.bags{i}.lightSlotsFull{2} == true
+                    fullBagIndex = i;
+                    return;
+                end
+                if self.BaggingArea.Bag{i}.onRobot == true
+                    %if the bag is already on the robot
+                    %check if the bag is near the end place
+                    if max(max(abs(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) - self.BaggingArea.Bag{bagIndex}.wayPoints2{3}))) < 0.005
+                        self.BaggingArea.Bag{i}.handOff = true; 
+                        %release bag
+                        continue
+                    end
+                    %not at bag yet, keep bag on robot
+                    self.BaggingArea.Bag{i} = self.BaggingArea.Bag{i}.moveBag(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) * transl(0,0.2,0) * trotx(deg2rad(-90)));
+                    continue
+                end
+                if self.BaggingArea.Bag{i}.trajCalculated ~= false
+                    %traj calculated but not yet on robot
+                    %check if we are close enough to grab the bag
+                    if max(max(abs(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) - self.BaggingArea.Bag{bagIndex}.wayPoints2{1}))) < 0.005
+                        %grab object
+                        self.BaggingArea.Bag{i}.onRobot = true;
+                    end
+                end    
+                if %generate trajectory for bag handoff
+                    self = self.generateHandoffPath(self.AldyBaggerBotKUKA, i);
+                    self.BaggingArea.Bag{i}.trajCalculated = true;
+                    return 
+                end
+                %could not find a emptys return error TODO
+                disp('Can''t find a bag spot.')  
+            end
+            %}
         end
         
         function self = generateBaggingPath(self, itemIndex, slotTransform)            
@@ -231,6 +270,27 @@ classdef AldyStore
             %self.ConveyorBelt.items{itemIndex}.wayPoints{8} = self.AldyBaggerBot.robot.model.fkine(AldyBaggerBot.homePose);
             for i = 1:size(self.ConveyorBelt.items{itemIndex}.wayPoints, 2)
                 self.AldyBaggerBotUR3 = self.AldyBaggerBotUR3.addTraj(self.ConveyorBelt.items{itemIndex}.wayPoints{i});
+            end
+        end
+        
+        function self = generateHandoffPath(self, AldyBaggerBotKUKA, fullBagIndex)            
+            %determine robot approach bag pose
+            self.BaggingArea.Bag{fullBagIndex}.wayPoints2{1} = self.BaggingArea.Bag{fullBagIndex}.transform * transl(0,0.2,0) * trotx(deg2rad(-90));
+            
+            %robot move to customer hole
+            self.BaggingArea.Bag{fullBagIndex}.wayPoints2{2} = self.BaggingArea.Bag{fullBagIndex}.transform * transl(0.1,0.5,0) * trotx(deg2rad(-90)) * trotz(deg2rad(90)); 
+            
+            %robot move to customer
+            self.BaggingArea.Bag{fullBagIndex}.wayPoints2{3} = self.BaggingArea.Bag{fullBagIndex}.transform * transl(0.5,0.5,0) * trotx(deg2rad(-90)) * trotz(deg2rad(90));
+            
+            %robot move to customer hole
+            self.BaggingArea.Bag{fullBagIndex}.wayPoints2{4} = self.BaggingArea.Bag{fullBagIndex}.transform * transl(0.1,0.5,0) * trotx(deg2rad(-90)) * trotz(deg2rad(90));
+            
+            %robot move to home pose
+            self.BaggingArea.Bag{fullBagIndex}.wayPoints2{5} = self.AldyBaggerBotKUKA.robot.model.fkine(AldyBaggerBotKUKA.homePose);
+            
+            for i = 1:size(self.BaggingArea.Bag{fullBagIndex}.wayPoints2, 2)
+                self.AldyBaggerBotKUKA = self.AldyBaggerBotKUKA.addTraj(self.BaggingArea.Bag{fullBagIndex}.wayPoints2{i});
             end
         end
         

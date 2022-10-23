@@ -13,6 +13,9 @@ classdef Bag
         
         heavySlotsTransform = {};
         lightSlotsTransform = {};
+        onRobot = false;
+        handOff = false;
+        trajCalculated = false;
         
 	end
 	methods
