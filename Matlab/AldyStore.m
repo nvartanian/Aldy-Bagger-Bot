@@ -11,6 +11,7 @@ classdef AldyStore
         BaggingArea; %need class for baggingArea and Bag
         
         Person;
+        lightCurtainEnabled = false;
         lightCurtainX = 0.9;
         lightCurtainY = 2.5;
         
@@ -85,16 +86,17 @@ classdef AldyStore
         end
         
         function self = stepStore(self)
-            self.Person.body.base
-            self.lightCurtainX
-            self.lightCurtainY
             self.ConveyorBelt = self.ConveyorBelt.stepBeltY(); 
-            if self.Person.body.base(1, 4) < self.lightCurtainX
-                if self.Person.body.base(2, 4) < self.lightCurtainY
-                    self.eStop = true; %trigger E-stop.
-                    return;
+            if self.lightCurtainEnabled == true
+                if self.Person.body.base(1, 4) < self.lightCurtainX
+                    if self.Person.body.base(2, 4) < self.lightCurtainY
+                        self.eStop = true; %trigger E-stop.
+                        return;
+                    end
                 end
             end
+            
+            %collision detection checking
                 
             if self.idle ~= false
                 return
