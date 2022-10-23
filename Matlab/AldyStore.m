@@ -7,6 +7,7 @@ classdef AldyStore
         height = 2; %z axis = height
         
         AldyBaggerBot;
+        AldyBaggerBot2;
         ConveyorBelt; 
         BaggingArea; %need class for baggingArea and Bag
         
@@ -24,13 +25,16 @@ classdef AldyStore
     end
     methods
         %constructor
-        function obj = AldyStore(AldyBaggerBot)
+        function obj = AldyStore(AldyBaggerBot,AldyBaggerBot2)
             obj.AldyBaggerBot = AldyBaggerBot;
             obj.AldyBaggerBot.robot.model.base = obj.transform * transl(0, 1.75, 0.75) * trotz(pi);
             obj.AldyBaggerBot.robot.model.animate(obj.AldyBaggerBot.homePose);
             beltT = obj.transform * transl(0.11, 1.5, 0.75);
             obj.ConveyorBelt = ConveyorBelt(beltT, 3, 0.2); %create ConveyorBelt obj
             obj.BaggingArea = BaggingArea(obj.transform * transl(0.12, 2.1, 0.75) * trotz(deg2rad(0))); %create BaggingArea obj
+            obj.AldyBaggerBot2 = AldyBaggerBot2; % add kuka bot
+            obj.AldyBaggerBot2.robot.model.base = obj.transform * transl(-0.3, 0.5, 0.8) * trotz(pi);
+            obj.AldyBaggerBot2.robot.model.animate(obj.AldyBaggerBot2.homePose);
             
             %setup environment
             % Floor
@@ -102,6 +106,7 @@ classdef AldyStore
                 return
             end
             self.AldyBaggerBot = self.AldyBaggerBot.stepRobot();
+            self.AldyBaggerBot2 = self.AldyBaggerBot2.stepRobot();
             
             for i = 1:size(self.ConveyorBelt.items,2)
                 if self.ConveyorBelt.items{i}.bagged ~= false

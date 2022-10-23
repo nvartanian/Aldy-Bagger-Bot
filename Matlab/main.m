@@ -14,8 +14,9 @@ end
 %initialise environment
 gripper = "gripperClass";
 robot = AldyBaggerBot(UR3, gripper);
+robot2 = AldyBaggerBot2(KUKA, gripper);
 robot.robot.model.qlim = deg2rad([-160,130;-160,40;-20,250;-190,40;-110,190;-360,360;]);
-env = AldyStore(robot);
+env = AldyStore(robot,robot2);
 gui = AldyGUI(env);
 
 %run
