@@ -2,13 +2,17 @@ classdef AldyStore
     properties
         %constant
         transform = eye(4); %centre of store
-        width = 2; %x axis = width
+        width = 3; %x axis = width
         length = 6; %y axis = length
         height = 2; %z axis = height
         
         AldyBaggerBot;
         ConveyorBelt; 
         BaggingArea; %need class for baggingArea and Bag
+        
+        Person;
+        lightCurtainX = 0.9;
+        lightCurtainY = 2.5;
         
         scanTransform = eye(4) * transl(0.3,1.8,1) * trotx(deg2rad(180)); %TODO, work out pose to pass scanner. Trial/error, plot transfrom and check.
         
@@ -53,6 +57,10 @@ classdef AldyStore
             checkoutXYZ = [obj.transform(1, 4), obj.transform(2, 4) + 2, obj.transform(3, 4)];
             PlaceObject('AldyCheckoutV2.ply',checkoutXYZ);
 
+            % Add Person
+            personT = obj.transform * transl(1, 2, 0);
+            obj.Person = Person('person1', personT);
+            
             % Safety Features/Enviromental Objects
             % Camera (Mounted on wall)
             %cameraXYZ = [-obj.width/1.5, -obj.length, obj.height/1.5];
@@ -77,7 +85,17 @@ classdef AldyStore
         end
         
         function self = stepStore(self)
+            self.Person.body.base
+            self.lightCurtainX
+            self.lightCurtainY
             self.ConveyorBelt = self.ConveyorBelt.stepBeltY(); 
+            if self.Person.body.base(1, 4) < self.lightCurtainX
+                if self.Person.body.base(2, 4) < self.lightCurtainY
+                    self.eStop = true; %trigger E-stop.
+                    return;
+                end
+            end
+                
             if self.idle ~= false
                 return
             end
