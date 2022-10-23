@@ -12,6 +12,10 @@ classdef Item
         bagged = false; %goes true when robot touches item < 0.05m
         onRobot = false;
         
+        alligned = false;
+        alligning = false;
+        allignWayPoints = [];
+        
         wayPoints = [];
 
 		% optional properties

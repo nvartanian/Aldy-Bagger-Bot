@@ -206,6 +206,25 @@ classdef AldyStore
             
             %% kuka robot function
             %{
+            for i = 1:size(self.ConveyorBelt.items, 2)
+                if self.ConveyorBelt.items{i}.alligned == true
+                    continue;
+                end
+                if self.ConveyorBelt.items{i}.allignTrajCalculated == true
+                    %generate KUKA traj
+                    self.ConveyorBelt.items{i}.allignWayPoints{1} = self.ConveyorBelt.items{i}
+                    continue;
+                end
+                if self.ConveyorBelt.items{i}.alligning == true
+                    %move to next pose
+                    %KUKA is grabbing item
+                    if max(max(abs(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) - self.ConveyorBelt.items{i}.allignWayPoints{1}))) < 0.005
+                    
+                    end
+                    continue;
+                end
+            end
+            
             for i = 1:size(self.BaggingArea.bags, 2)
                 if self.BaggingArea.bags{i}.heavySlotsFull{1} == true && self.BaggingArea.bags{i}.heavySlotsFull{2} == true && self.BaggingArea.bags{i}.lightSlotsFull{1} == true && self.BaggingArea.bags{i}.lightSlotsFull{2} == true
                     fullBagIndex = i;
