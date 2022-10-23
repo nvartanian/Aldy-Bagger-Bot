@@ -4,7 +4,7 @@ classdef KUKA < handle
         model;
         
         %> workspace
-        workspace = [-1.8 1.8 -1.8 1.8 0 1.8];   
+        workspace = [-3 3 -3 3 -0.2 3];   
       
     end
     
@@ -30,13 +30,13 @@ classdef KUKA < handle
             pause(0.001);
                    
             name = ['KUKA_',datestr(now,'yyyymmddTHHMMSSFFF')];
-            L1 = Link('d',0.17,'a',0,'alpha',pi/2, 'offset',0,   'qlim',deg2rad([-170 170]))
-            L2 = Link('d',0,   'a',0,'alpha',-pi/2,   'offset',0,'qlim',deg2rad([-120 120]))
-            L3 = Link('d',0.4, 'a',0,'alpha',pi/2,    'offset',0,   'qlim',deg2rad([-170 170]))
-            L4 = Link('d',0,   'a',0,'alpha',-pi/2,  'offset',0,   'qlim',deg2rad([-120 120]))
-            L5 = Link('d',0.4, 'a',0,'alpha',pi/2,    'offset',0,   'qlim',deg2rad([-170 170]))
-            L6 = Link('d',0,   'a',0,'alpha',-pi/2,    'offset',0,   'qlim',deg2rad([-120 120]))
-            L7 = Link('d',0.05,'a',0,'alpha',0,    'offset',0,   'qlim',deg2rad([-175 175]))
+            L1 = Link('d',0.17,'a',0,'alpha',pi/2, 'offset',0,   'qlim',deg2rad([-170 170]));
+            L2 = Link('d',0,   'a',0,'alpha',-pi/2,   'offset',0,'qlim',deg2rad([-120 120]));
+            L3 = Link('d',0.4, 'a',0,'alpha',pi/2,    'offset',0,   'qlim',deg2rad([-170 170]));
+            L4 = Link('d',0,   'a',0,'alpha',-pi/2,  'offset',0,   'qlim',deg2rad([-120 120]));
+            L5 = Link('d',0.4, 'a',0,'alpha',pi/2,    'offset',0,   'qlim',deg2rad([-170 170]));
+            L6 = Link('d',0,   'a',0,'alpha',-pi/2,    'offset',0,   'qlim',deg2rad([-120 120]));
+            L7 = Link('d',0.05,'a',0,'alpha',0,    'offset',0,   'qlim',deg2rad([-175 175]));
 
             self.model = SerialLink([L1 L2 L3 L4 L5 L6 L7],'name',name);
           
@@ -60,7 +60,7 @@ classdef KUKA < handle
             end  
             self.model.delay = 0;
 
-            % Try to correctly colour the arm (if colours are in ply file data)
+            %Try to correctly colour the arm (if colours are in ply file data)
             %{
             for linkIndex = 0:self.model.n
                 handles = findobj('Tag', self.model.name);
