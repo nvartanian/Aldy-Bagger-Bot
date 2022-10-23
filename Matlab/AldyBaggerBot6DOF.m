@@ -1,4 +1,4 @@
-classdef AldyBaggerBot
+classdef AldyBaggerBot6DOF
     properties
         robot;
         gripper;
@@ -14,7 +14,7 @@ classdef AldyBaggerBot
     end
     methods
         %constructor
-        function obj = AldyBaggerBot(robot, gripper)
+        function obj = AldyBaggerBot6DOF(robot, gripper)
             obj.robot = robot;
             obj.gripper = gripper;
             
