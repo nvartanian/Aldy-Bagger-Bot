@@ -51,7 +51,7 @@ classdef AldyStore
 
             %Checkout
             checkoutXYZ = [obj.transform(1, 4), obj.transform(2, 4) + 2, obj.transform(3, 4)];
-            PlaceObject('AldyCheckout.ply',checkoutXYZ);
+            PlaceObject('AldyCheckoutV2.ply',checkoutXYZ);
 
             % Safety Features/Enviromental Objects
             % Camera (Mounted on wall)
