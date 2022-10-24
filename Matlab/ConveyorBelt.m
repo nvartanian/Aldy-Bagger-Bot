@@ -5,7 +5,7 @@ classdef ConveyorBelt
         length;
         width;
         maxItemCount = 10; %will spawn all of these in at the start for performance improvement
-        averageTicksBetweenSpawns = 25; %items spawn randowmly +/- 50% of this spawn rate
+        averageTicksBetweenSpawns = 50; %items spawn randowmly +/- 10 of this spawn rate
         
         %variables
         speed = 10; %mm/frame (25hz)   
@@ -22,7 +22,7 @@ classdef ConveyorBelt
             obj.transform = transform;
             obj.length = length;
             obj.width = width;
-            obj.ticksUntilNextSpawn = obj.averageTicksBetweenSpawns * (rand() + 0.5);
+            obj.ticksUntilNextSpawn = obj.averageTicksBetweenSpawns + 10*(rand() - 0.5);
             
             %spawn all items at start, rather than one at a time. This
             %reduces stuttering and view reseting if items are spawned in
@@ -103,16 +103,16 @@ classdef ConveyorBelt
         
         function self = spawnItems(self)
             %first 2 items are always heavy
-            t = self.transform * transl((self.width * rand()) - self.width/2, -self.length/1.1, -0.5) * trotz(2*pi*rand());
+            t = self.transform * transl((self.width * rand()) - self.width/2, -self.length/1.1, -0.5) * trotz(pi*rand());
             self.items{1} = Item(['item',num2str(1)], t, true);
             
-            t = self.transform * transl((self.width * rand()) - self.width/2, -self.length/1.1, -0.5) * trotz(2*pi*rand());
+            t = self.transform * transl((self.width * rand()) - self.width/2, -self.length/1.1, -0.5) * trotz(pi*rand());
             self.items{2} = Item(['item',num2str(2)], t, true);
             
-            t = self.transform * transl((self.width * rand()) - self.width/2, -self.length/1.1, -0.5) * trotz(2*pi*rand());
+            t = self.transform * transl((self.width * rand()) - self.width/2, -self.length/1.1, -0.5) * trotz(pi*rand());
             self.items{3} = Item(['item',num2str(3)], t, false);
             for i = 4:self.maxItemCount
-                t = self.transform * transl((self.width * rand()) - self.width/2, -self.length/1.1, -0.5) * trotz(2*pi*rand());
+                t = self.transform * transl((self.width * rand()) - self.width/2, -self.length/1.1, -0.5) * trotz(pi*rand());
                 if rand() > 0.5
                     self.items{i} = Item(['item',num2str(i)], t, true);
                 else

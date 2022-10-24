@@ -14,6 +14,7 @@ classdef Item
         
         alligned = false;
         alligning = false;
+        allignTrajCalculated = false;
         allignWayPoints = [];
         
         wayPoints = [];

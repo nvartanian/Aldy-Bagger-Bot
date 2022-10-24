@@ -1,10 +1,12 @@
 classdef AldyBaggerBot7DOF
     properties
         robot;
+        robotPOS;
         gripper;
+        gripperPath = [];
         
         homePose = [0,-pi/3,0,2*pi/3,0,pi/6,0];
-        poseGuess = deg2rad([0,-60,120,-150,-90,0,0]);
+        poseGuess = [0,pi/6,0,2*pi/3,0,pi/6,0];
         
         path = [];
         
@@ -21,14 +23,26 @@ classdef AldyBaggerBot7DOF
         
         %methods
         function self = stepRobot(self)
+            self.robotPOS = self.robot.model.getpos;
             if self.eStop == false
                 %gripper movement
+                if size(self.gripperPath, 2) > 0
+                    gripQ = self.gripperPath(1,:);
+                    if size(self.gripperPath, 1) > 2
+                        self.gripperPath = self.gripperPath(2:end,:); %remove from path
+                    else
+                        self.gripperPath = [];%last pose in path
+                    end
+                else
+                    gripQ(1) = self.gripper.LeftFinger.getpos;
+                    gripQ(2) = self.gripper.RightFinger.getpos;
+                end
                 
                 
                 %robot movement
                 if size(self.path, 1) > 0
                     self.robot.model.animate(self.path(1,:)); %move to next pose in path
-                    self.gripper.moveGripper(self.robot.model.fkine(self.path(1,:)), [0, 0]);
+                    self.gripper.moveGripper(self.robot.model.fkine(self.path(1,:)), gripQ);
                     if size(self.path, 1) > 2
                         self.path = self.path(2:end,:); %remove from path
                     else
@@ -50,10 +64,10 @@ classdef AldyBaggerBot7DOF
         end
         
         function self = addTraj(self, endTransform)
-            steps = 50;
+            steps = 10;
             try qStart = self.path(end,:); %last pose in path
             catch
-                qStart = self.homePose;
+                qStart = self.robotPOS;
             end
             qEnd = self.robot.model.ikcon(endTransform, self.poseGuess);
             self.path = [self.path; jtraj(qStart, qEnd, steps)]; %add to path

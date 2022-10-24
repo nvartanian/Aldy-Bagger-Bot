@@ -1,6 +1,7 @@
 classdef AldyBaggerBot6DOF
     properties
         robot;
+        robotPOS;
         gripper;
         gripperPath = [];
         
@@ -26,6 +27,7 @@ classdef AldyBaggerBot6DOF
         
         %methods
         function self = stepRobot(self)
+            self.robotPOS = self.robot.model.getpos;
             if self.eStop == false
                 %gripper movement
                 if size(self.gripperPath, 2) > 0
@@ -69,7 +71,7 @@ classdef AldyBaggerBot6DOF
             steps = 50;
             try qStart = self.path(end,:); %last pose in path
             catch
-                qStart = self.homePose;
+                qStart = self.robotPOS;
             end
             qEnd = self.robot.model.ikcon(endTransform, self.poseGuess);
             self.path = [self.path; jtraj(qStart, qEnd, steps)]; %add to path

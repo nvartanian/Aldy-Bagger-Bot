@@ -45,7 +45,7 @@ classdef AldyStore
             obj.AldyBaggerBotKUKA.robot.model.animate(obj.AldyBaggerBotKUKA.homePose);
             
             beltT = obj.transform * transl(0.11, 1.5, 0.75);
-            obj.ConveyorBelt = ConveyorBelt(beltT, 3, 0.1); %create ConveyorBelt obj
+            obj.ConveyorBelt = ConveyorBelt(beltT, 3, 0.05); %create ConveyorBelt obj
             obj.BaggingArea = BaggingArea(obj.transform * transl(0.12, 2.1, 0.75) * trotz(deg2rad(0))); %create BaggingArea obj
             
             %setup environment
@@ -104,8 +104,6 @@ classdef AldyStore
         end
         
         function self = stepStore(self)
-            self.ConveyorBelt = self.ConveyorBelt.stepBeltY(); 
-            
             if self.lightCurtainEnabled == true
                 if self.Person.body.base(1, 4) < self.lightCurtainX
                     if self.Person.body.base(2, 4) < self.lightCurtainY
@@ -128,9 +126,69 @@ classdef AldyStore
             if self.idle ~= false
                 return
             end
+            self.ConveyorBelt = self.ConveyorBelt.stepBeltY(); 
             self.AldyBaggerBotUR3 = self.AldyBaggerBotUR3.stepRobot();
             self.AldyBaggerBotKUKA = self.AldyBaggerBotKUKA.stepRobot();
             
+%             %% kuka robot function
+%             for i = 1:size(self.ConveyorBelt.items, 2)
+%                 if self.ConveyorBelt.items{i}.alligned == true
+%                     continue;
+%                 end
+%                 if self.ConveyorBelt.items{i}.transform(2, 4) < -0.2 %not close enough to KUKA
+%                     continue
+%                 end
+%                 if self.ConveyorBelt.items{i}.allignTrajCalculated ~= true
+%                     %generate KUKA traj
+%                     %robot approach item
+%                     self.ConveyorBelt.items{i}.allignWayPoints{1} = self.ConveyorBelt.items{i}.transform * self.gripperOffset *  transl(0,0,0.05) * trotx(deg2rad(180));
+%                     self.ConveyorBelt.items{i}.allignWayPoints{1}(2, 4) = self.ConveyorBelt.items{i}.allignWayPoints{1}(2, 4) + 0.2;
+%                     
+%                     %robot grab item
+%                     self.ConveyorBelt.items{i}.allignWayPoints{2} = self.ConveyorBelt.items{i}.allignWayPoints{1} * transl(0,0,0.05);
+% 
+%                     %robot slide item with belt
+%                     self.ConveyorBelt.items{i}.allignWayPoints{3} = self.ConveyorBelt.items{i}.allignWayPoints{2};
+%                     self.ConveyorBelt.items{i}.allignWayPoints{3}(1, 4) = self.ConveyorBelt.transform(1, 4);
+%                     self.ConveyorBelt.items{i}.allignWayPoints{3}(2, 4) = self.ConveyorBelt.items{i}.allignWayPoints{3}(2, 4) + 0.1;
+% 
+%                     %robot release item
+%                     self.ConveyorBelt.items{i}.allignWayPoints{4} = self.ConveyorBelt.items{i}.allignWayPoints{3} * transl(0, 0, -0.05);
+% 
+%                     for a = 1:size(self.ConveyorBelt.items{i}.allignWayPoints, 2)
+%                         self.AldyBaggerBotKUKA = self.AldyBaggerBotKUKA.addTraj(self.ConveyorBelt.items{i}.allignWayPoints{a});
+%                     end
+%                     self.ConveyorBelt.items{i}.allignTrajCalculated = true;
+%                     break;
+%                 end
+%                 
+%                 %move to next pose
+%                 %KUKA is grabbing item
+%                 if max(max(abs(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) - self.ConveyorBelt.items{i}.allignWayPoints{1}))) < 0.005
+%                     %Start closing gripper
+%                     if size(self.AldyBaggerBotKUKA.gripperPath) < 1
+%                         self.AldyBaggerBotKUKA.gripperPath = jtraj([deg2rad(-30),deg2rad(-30)], [0,0], 10);
+%                     end
+%                 end
+%                 if max(max(abs(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) - self.ConveyorBelt.items{i}.allignWayPoints{2}))) < 0.005
+%                     %Gripper is closed, move item with KUKA
+%                     self.ConveyorBelt.items{i}.alligning = true;
+%                 end
+%                 if self.ConveyorBelt.items{i}.alligning == true
+%                     %move item with KUKA
+%                     self.ConveyorBelt.items{i} = self.ConveyorBelt.items{i}.moveItem(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) * self.gripperOffset * trotx(deg2rad(180)));
+%                 end
+%                 if max(max(abs(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) - self.ConveyorBelt.items{i}.allignWayPoints{3}))) < 0.005
+%                     %Start opening Gripper, release item
+%                     self.ConveyorBelt.items{i}.alligning = false;
+%                     self.ConveyorBelt.items{i}.alligned = true;
+%                     if size(self.AldyBaggerBotKUKA.gripperPath) < 1
+%                         self.AldyBaggerBotKUKA.gripperPath = jtraj([0,0], [deg2rad(-30),deg2rad(-30)], 10);
+%                     end
+%                 end   
+%             end
+%             
+            %% UR3 robot function
             for i = 1:size(self.ConveyorBelt.items,2)
                 if self.ConveyorBelt.items{i}.bagged ~= false
                     %warning('Item %d is already bagged, continuing to next item', i);
@@ -143,7 +201,7 @@ classdef AldyStore
                 if self.ConveyorBelt.items{i}.onRobot == true
                     %move brick to robot
                     %check place brick
-                    if max(max(abs(self.AldyBaggerBotUR3.robot.model.fkine(self.AldyBaggerBotUR3.robot.model.getpos) - self.ConveyorBelt.items{i}.wayPoints{6}))) < 0.005
+                    if max(max(abs(self.AldyBaggerBotUR3.robot.model.fkine(self.AldyBaggerBotUR3.robotPOS) - self.ConveyorBelt.items{i}.wayPoints{6}))) < 0.005
                         self.ConveyorBelt.items{i}.bagged = true;
                         %open gripper
                         if size(self.AldyBaggerBotUR3.gripperPath) < 1
@@ -152,13 +210,13 @@ classdef AldyStore
                         continue
                     end
                     %not at bag yet, keep brick on robot
-                    self.ConveyorBelt.items{i} = self.ConveyorBelt.items{i}.moveItem(self.AldyBaggerBotUR3.robot.model.fkine(self.AldyBaggerBotUR3.robot.model.getpos) * self.gripperOffset * trotx(deg2rad(180)));
+                    self.ConveyorBelt.items{i} = self.ConveyorBelt.items{i}.moveItem(self.AldyBaggerBotUR3.robot.model.fkine(self.AldyBaggerBotUR3.robotPOS) * self.gripperOffset * trotx(deg2rad(180)));
                     continue
                 end
                 if self.ConveyorBelt.items{i}.trajCalculated ~= false
                     %traj calculated but not yet on robot
                     %check collect brick
-                    if max(max(abs(self.AldyBaggerBotUR3.robot.model.fkine(self.AldyBaggerBotUR3.robot.model.getpos) - self.ConveyorBelt.items{i}.wayPoints{1}))) < 0.005
+                    if max(max(abs(self.AldyBaggerBotUR3.robot.model.fkine(self.AldyBaggerBotUR3.robotPOS) - self.ConveyorBelt.items{i}.wayPoints{1}))) < 0.005
                         %start closing gripper, use same number of steps as
                         %robot traj calculation, add a closing traj to
                         %gripper. need a step gripper --> inside
@@ -167,17 +225,12 @@ classdef AldyStore
                             self.AldyBaggerBotUR3.gripperPath = jtraj([deg2rad(-30),deg2rad(-30)], [0,0], 50);
                         end
                     end
-                    if max(max(abs(self.AldyBaggerBotUR3.robot.model.fkine(self.AldyBaggerBotUR3.robot.model.getpos) - self.ConveyorBelt.items{i}.wayPoints{2}))) < 0.005
+                    if max(max(abs(self.AldyBaggerBotUR3.robot.model.fkine(self.AldyBaggerBotUR3.robotPOS) - self.ConveyorBelt.items{i}.wayPoints{2}))) < 0.005
                         self.ConveyorBelt.items{i}.onRobot = true;
                         %gripper should be closed
                     end
                     continue
                 end
-                
-%                 if self.ConveyorBelt.items{i}.onBelt ~= true
-%                     %warning('Item %d is not on the belt, continuing to next item', i);
-%                     continue
-%                 end
 
                 if self.AldyBaggerBotUR3.inRange(self.ConveyorBelt.items{i}.transform * self.gripperOffset * transl(0,0,0.05) * trotx(deg2rad(180))) ~= true
                     %warning('Item %d is not in range, continuing to next item', i);
@@ -203,62 +256,6 @@ classdef AldyStore
                 %could not find a bag spot, return error TODO
                  
             end
-            
-            %% kuka robot function
-            %{
-            for i = 1:size(self.ConveyorBelt.items, 2)
-                if self.ConveyorBelt.items{i}.alligned == true
-                    continue;
-                end
-                if self.ConveyorBelt.items{i}.allignTrajCalculated == true
-                    %generate KUKA traj
-                    self.ConveyorBelt.items{i}.allignWayPoints{1} = self.ConveyorBelt.items{i}
-                    continue;
-                end
-                if self.ConveyorBelt.items{i}.alligning == true
-                    %move to next pose
-                    %KUKA is grabbing item
-                    if max(max(abs(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) - self.ConveyorBelt.items{i}.allignWayPoints{1}))) < 0.005
-                    
-                    end
-                    continue;
-                end
-            end
-            
-            for i = 1:size(self.BaggingArea.bags, 2)
-                if self.BaggingArea.bags{i}.heavySlotsFull{1} == true && self.BaggingArea.bags{i}.heavySlotsFull{2} == true && self.BaggingArea.bags{i}.lightSlotsFull{1} == true && self.BaggingArea.bags{i}.lightSlotsFull{2} == true
-                    fullBagIndex = i;
-                    return;
-                end
-                if self.BaggingArea.Bag{i}.onRobot == true
-                    %if the bag is already on the robot
-                    %check if the bag is near the end place
-                    if max(max(abs(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) - self.BaggingArea.Bag{bagIndex}.wayPoints2{3}))) < 0.005
-                        self.BaggingArea.Bag{i}.handOff = true; 
-                        %release bag
-                        continue
-                    end
-                    %not at bag yet, keep bag on robot
-                    self.BaggingArea.Bag{i} = self.BaggingArea.Bag{i}.moveBag(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) * transl(0,0.2,0) * trotx(deg2rad(-90)));
-                    continue
-                end
-                if self.BaggingArea.Bag{i}.trajCalculated ~= false
-                    %traj calculated but not yet on robot
-                    %check if we are close enough to grab the bag
-                    if max(max(abs(self.AldyBaggerBotKUKA.robot.model.fkine(self.AldyBaggerBotKUKA.robot.model.getpos) - self.BaggingArea.Bag{bagIndex}.wayPoints2{1}))) < 0.005
-                        %grab object
-                        self.BaggingArea.Bag{i}.onRobot = true;
-                    end
-                end    
-                if %generate trajectory for bag handoff
-                    self = self.generateHandoffPath(self.AldyBaggerBotKUKA, i);
-                    self.BaggingArea.Bag{i}.trajCalculated = true;
-                    return 
-                end
-                %could not find a emptys return error TODO
-                disp('Can''t find a bag spot.')  
-            end
-            %}
         end
         
         function self = generateBaggingPath(self, itemIndex, slotTransform)            
@@ -285,31 +282,8 @@ classdef AldyStore
             %robot move away from bag
             self.ConveyorBelt.items{itemIndex}.wayPoints{7} = slotTransform * transl(0, 0, 0.1) * trotx(deg2rad(180));
             
-            %robot move to home pose
-            %self.ConveyorBelt.items{itemIndex}.wayPoints{8} = self.AldyBaggerBot.robot.model.fkine(AldyBaggerBot.homePose);
             for i = 1:size(self.ConveyorBelt.items{itemIndex}.wayPoints, 2)
                 self.AldyBaggerBotUR3 = self.AldyBaggerBotUR3.addTraj(self.ConveyorBelt.items{itemIndex}.wayPoints{i});
-            end
-        end
-        
-        function self = generateHandoffPath(self, AldyBaggerBotKUKA, fullBagIndex)            
-            %determine robot approach bag pose
-            self.BaggingArea.Bag{fullBagIndex}.wayPoints2{1} = self.BaggingArea.Bag{fullBagIndex}.transform * transl(0,0.2,0) * trotx(deg2rad(-90));
-            
-            %robot move to customer hole
-            self.BaggingArea.Bag{fullBagIndex}.wayPoints2{2} = self.BaggingArea.Bag{fullBagIndex}.transform * transl(0.1,0.5,0) * trotx(deg2rad(-90)) * trotz(deg2rad(90)); 
-            
-            %robot move to customer
-            self.BaggingArea.Bag{fullBagIndex}.wayPoints2{3} = self.BaggingArea.Bag{fullBagIndex}.transform * transl(0.5,0.5,0) * trotx(deg2rad(-90)) * trotz(deg2rad(90));
-            
-            %robot move to customer hole
-            self.BaggingArea.Bag{fullBagIndex}.wayPoints2{4} = self.BaggingArea.Bag{fullBagIndex}.transform * transl(0.1,0.5,0) * trotx(deg2rad(-90)) * trotz(deg2rad(90));
-            
-            %robot move to home pose
-            self.BaggingArea.Bag{fullBagIndex}.wayPoints2{5} = self.AldyBaggerBotKUKA.robot.model.fkine(AldyBaggerBotKUKA.homePose);
-            
-            for i = 1:size(self.BaggingArea.Bag{fullBagIndex}.wayPoints2, 2)
-                self.AldyBaggerBotKUKA = self.AldyBaggerBotKUKA.addTraj(self.BaggingArea.Bag{fullBagIndex}.wayPoints2{i});
             end
         end
         

@@ -22,7 +22,7 @@ gui = AldyGUI(env);
 
 %run
 timestep = 0;
-%profile on
+% profile on
 while true
     tic  
     timestep
@@ -34,4 +34,4 @@ while true
     pause(0.04 - toc) %25hz
 end
 
-%profile viewer
+% profile viewer
