@@ -3,18 +3,19 @@ close all
 clf
 
 %% 
-% Create image target 
+%  Image target 
 pStar = [824 200 200 824; 200 200 824 824];
 
-%Create 3D points
+%3D points
 P=[1.0,1.0,1.0,1.0;
 0.0,0.5,0.5,0.0;
 0.75,0.75,0.25,0.25];
+B = [1.0;0.25;0.5];
 
 r = UR3();             
 q0 = [pi/2; -2*pi/3; -pi/3; -pi/6; 0; pi/8];
 
-% Add the camera
+% Add camera
 cam = CentralCamera('focal', 0.08, 'pixel', 10e-5, ...
 'resolution', [1024 1024], 'centre', [512 512],'name', 'UR3camera');
 
@@ -38,9 +39,12 @@ cam.T = Tc0;
 
 % Display points in 3D and the camera
 cam.plot_camera('Tcam',Tc0, 'label','scale',0.15);
-ball = plot_sphere(P, 0.05, 'b');
+ball = plot_sphere(B, 0.05, 'm');
 lighting gouraud
 light
+
+
+
 
 %Project points to the image
 p = cam.plot(P, 'Tcam', Tc0);
@@ -61,8 +65,9 @@ timestep = 0;
         timestep = timestep + 1;
         delete(ball);
         P = P.*[0.995;1;1];
+        B  = B.*[0.995;1;1];
         depth = mean (P(1,:));
-        ball = plot_sphere(P, 0.05, 'b');
+        ball = plot_sphere(B, 0.05, 'm');
         % compute the view of the camera
         uv = cam.plot(P);
         
@@ -90,7 +95,7 @@ timestep = 0;
             return
         end
         %joint velocities
-        fprintf('v: %.3f %.3f %.3f %.3f %.3f %.3f\n', v);
+        %fprintf('v: %.3f %.3f %.3f %.3f %.3f %.3f\n', v);
 
         %compute robot's Jacobian and inverse
         J2 = r.model.jacobn(q0);
