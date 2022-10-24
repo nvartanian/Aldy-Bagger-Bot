@@ -80,24 +80,6 @@ classdef AldyStore
             obj.personVertices = v;
             obj.Person = Person('person1', personT);
             
-            % Safety Features/Enviromental Objects
-            % Camera (Mounted on wall)
-            %cameraXYZ = [-obj.width/1.5, -obj.length, obj.height/1.5];
-            %PlaceObject('cctv.ply',cameraXYZ);
-
-            % Fire Extinguisher (Mounted on wall in centre)
-            %fireXYZ = [-obj.width/2, -obj.length + 0.2, 0];
-            %PlaceObject('fire.ply',fireXYZ);
-
-            % E-Stop (On Table)
-            %eStopXYZ = [tableXYZ(1) - tableRad * 0.9,tableXYZ(2) + tableRad * 0.9,tableXYZ(3) + 0.445];
-            %PlaceObject('eStop.ply',eStopXYZ);
-            
-            %safety features
-            %e-stop
-            
-            %light curtain
-            
             %change default figure view
             view(135,30)
             
